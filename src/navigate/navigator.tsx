@@ -1,18 +1,24 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import PaymentForm from "../page/vnpay/components/PaymentForm";
-import PaymentSuccess from "../page/vnpay/components/PaymentSuccess";
-import GooglePay from "../page/google_pay/google_pay";
-import Cart from "../page/cart/cart";
+import RegisterForm from "../page/auth/Register";
+import GetUser from "../page/auth/GetUser";
+import LoginForm from "../page/auth/LoginForm";
+import Home from "../page/home-TrangChinh/Home";
+import SettingsDetail from "../page/setting/SettingsDetail";
+import ProfileDetail from "../page/auth/ProfileDetail";
+
+
 
 const NavigatorBrowser: React.FC = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Cart />} />
-        <Route path="/vnpay-pay" element={<PaymentForm />} />
-        <Route path="/google-pay" element={<GooglePay />} />
-        <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/register" element={<RegisterForm />} />
+        <Route path="/getuserid" element={<GetUser />} />
+        <Route path="/profile" element={<ProfileDetail />} />
+        <Route path="/settings" element= {<SettingsDetail />} />
       </Routes>
     </Router>
   );

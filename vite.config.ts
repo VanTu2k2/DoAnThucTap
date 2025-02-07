@@ -7,10 +7,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8080', // Backend Spring Boot
+        target: 'http://localhost:5000', // Backend Spring Boot
         changeOrigin: true,
         secure: false,
       },
     },
+  },
+  css: {
+    postcss: './postcss.config.js', // Kiểm tra xem postcss có được chỉ định đúng không
   },
 })

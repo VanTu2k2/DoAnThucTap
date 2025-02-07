@@ -1,18 +1,14 @@
-
-import './App.css'
-import NavigatorBrowser from './navigate/navigator'
-
+import { AuthProvider } from "./hook/AuthContext";
+import NavigatorBrowser from "./navigate/navigator";
 
 
-function App() {
 
-
+const App: React.FC = () => {
   return (
-    <>
-      <NavigatorBrowser/>
-    
-    </>
-  )
-}
+    <AuthProvider>
+      <NavigatorBrowser />
+    </AuthProvider>
+  );
+};
 
-export default App
+export default App;
