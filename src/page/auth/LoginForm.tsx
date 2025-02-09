@@ -57,6 +57,15 @@ const LoginForm: React.FC = () => {
               className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-400 focus:outline-none"
             />
           </div>
+
+          <div className="flex items-center justify-between">
+            <a
+              onClick={() => navigation("/forgot-password")}
+              className="text-blue-500 hover:underline cursor-pointer"
+            >
+              Forgot password?
+            </a>
+          </div>
           <button
             type="submit"
             disabled={isLoading}

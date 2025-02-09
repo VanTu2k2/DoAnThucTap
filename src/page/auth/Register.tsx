@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { registerUser, verifyOtp } from "../../service/apiService";
 import axios from "axios";
+import { CloudUpload } from "lucide-react";
 
 const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -61,8 +62,40 @@ const RegisterForm: React.FC = () => {
     }
   };
 
+  const validateForm = () => {
+    const nameRegex = /^[A-Za-zÀ-ỹ\s]{2,50}$/;
+    const usernameRegex = /^[a-zA-Z0-9_]{4,20}$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const addressRegex = /^[A-Za-z0-9À-ỹ\s,.-]{5,100}$/;
+  
+    if (!nameRegex.test(formData.name)) {
+      setMessage("Tên không hợp lệ (chỉ chữ cái và khoảng trắng, tối đa 50 ký tự).");
+      return false;
+    }
+    if (!usernameRegex.test(formData.username)) {
+      setMessage("Tên đăng nhập không hợp lệ (4-20 ký tự, không dấu cách).");
+      return false;
+    }
+    if (!emailRegex.test(formData.email)) {
+      setMessage("Email không hợp lệ.");
+      return false;
+    }
+    if (!passwordRegex.test(formData.password)) {
+      setMessage("Mật khẩu cần ít nhất 8 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt.");
+      return false;
+    }
+    if (!addressRegex.test(formData.address)) {
+      setMessage("Địa chỉ không hợp lệ (5-100 ký tự).");
+      return false;
+    }
+    return true;
+  };
+  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setIsLoading(true);
     try {
       let imageUrl = formData.imageUrl;
@@ -195,20 +228,29 @@ const RegisterForm: React.FC = () => {
             />
           </div>
           <div className="mb-4">
-            <input
-              type="file"
-              name="avatar"
-              onChange={handleFileChange}
-              accept="image/*"
-              className="w-full p-3 border border-gray-300 rounded-md"
-            />
+            <label
+              htmlFor="file-upload"
+              className="flex flex-col items-center justify-center w-full h-40 p-4 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300 border-gray-300 dark:border-gray-600"
+            >
+              <CloudUpload className="text-gray-500 dark:text-gray-400" fontSize="large" />
+              <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">Kéo & thả hoặc nhấn để chọn ảnh</p>
+              <input
+                id="file-upload"
+                type="file"
+                name="avatar"
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+              />
+            </label>
+
             {imagePreview && (
-              <div className="mt-4">
-                <p className="text-sm text-gray-500">Ảnh xem trước:</p>
+              <div className="mt-4 text-center">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Ảnh xem trước:</p>
                 <img
                   src={imagePreview}
                   alt="Xem trước"
-                  className="w-32 h-32 object-cover rounded-md border border-gray-300"
+                  className="w-40 h-40 object-cover rounded-xl shadow-md mx-auto border border-gray-300 dark:border-gray-600"
                 />
               </div>
             )}
@@ -216,9 +258,8 @@ const RegisterForm: React.FC = () => {
 
           <button
             type="submit"
-            className={`w-full ${
-              isLoading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
-            } text-white p-3 rounded-md transition duration-200`}
+            className={`w-full ${isLoading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+              } text-white p-3 rounded-md transition duration-200`}
             disabled={isLoading}
           >
             {isLoading ? "Đang xử lý..." : "Đăng ký"}
@@ -236,9 +277,8 @@ const RegisterForm: React.FC = () => {
           />
           <button
             onClick={handleVerifyOtp}
-            className={`w-full ${
-              isLoading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
-            } text-white p-3 rounded-md transition duration-200 mt-4`}
+            className={`w-full ${isLoading ? "bg-gray-400" : "bg-green-500 hover:bg-green-600"
+              } text-white p-3 rounded-md transition duration-200 mt-4`}
             disabled={isLoading}
           >
             {isLoading ? "Đang xác thực..." : "Xác thực OTP"}
