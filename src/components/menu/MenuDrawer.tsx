@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Drawer, List, ListItem, ListItemText, Collapse, ListItemButton, IconButton, ListItemIcon, Box, Typography } from '@mui/material';
-import { Dashboard, ExpandLess, ExpandMore, History, Menu, NaturePeople, PendingActions, People, Spa, SpaOutlined } from '@mui/icons-material';
+import { Dashboard, ExpandLess, ExpandMore, History, Menu, NaturePeople, PendingActions, People, Spa, SpaOutlined, Login } from '@mui/icons-material';
 import { useAuth } from '../../hook/AuthContext';
 import Details from '../home/Details';
 import Footer from '../footer/Footer';
@@ -17,6 +17,7 @@ const MenuDrawer: React.FC = () => {
         services: false,
         appointments: false,
         history: false,
+        dangnhap: false,
     });
 
     const { user } = useAuth(); // Lấy role từ context (superadmin, admin, customer)
@@ -188,6 +189,24 @@ const MenuDrawer: React.FC = () => {
                         </ListItemButton>
                         <ListItemButton sx={{ pl: 4 }} onClick={() => handleNavigation('lskh')}>
                             <Typography>Lịch sử khách hàng</Typography>
+                        </ListItemButton>
+                    </List>
+                </Collapse>
+
+                {/* Test */}
+                <ListItem>
+                    <ListItemButton onClick={() => handleToggle('dangnhap')}>
+                        <ListItemIcon>
+                            <Login />
+                        </ListItemIcon>
+                        <ListItemText primary="Test" />
+                        {open.dangnhap ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                </ListItem>
+                <Collapse in={open.dangnhap} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                        <ListItemButton sx={{ pl: 4 }} onClick={() => handleNavigation('logintk')}>
+                            <Typography>Login tài khoản tại đây</Typography>
                         </ListItemButton>
                     </List>
                 </Collapse>

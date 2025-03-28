@@ -8,8 +8,8 @@ import ThongKeTC from "../../page/dashboard-ThongKe/Thong_Ke_TC";
 import LichSuDichVu from "../../page/history/LS_Dichvu";
 import LichSuKhachHang from "../../page/history/LS_Khachhang";
 import DanhSachNV from "../../page/staff-Nhanvien/Danh_sach_NV";
-
-
+import LoginForm from "../../page/auth/LoginForm";
+import NoiDung from "../menu/NoiDung";
 interface DetailsProps {
     currentPage: string;
 }
@@ -39,8 +39,15 @@ const Details: React.FC<DetailsProps> = ({ currentPage }) => {
             {/* Lịch sử */}
             {currentPage === 'lsdv' && <LichSuDichVu />}
             {currentPage === "lskh" && <LichSuKhachHang/>}
+
+            {/* Login */}
+            {currentPage === 'logintk' && <LoginForm />}
+            
+            {/* Nội dung */}
+            {currentPage === 'noidunghome' && <NoiDung />}
         </div>
     );
 }
 
 export default Details;
+
