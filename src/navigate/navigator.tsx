@@ -128,6 +128,10 @@ import ForgotPassword from "../page/auth/ForgotPassword";
 
 import Menu from "../components/menu/Menu";
 
+import BookingPage from "../page/appointment-LichHen/DatLichhen";
+import AppointmentList from "../page/appointment-LichHen/XemLichDatHen";
+import AccountCustomer from "../page/customer-KhachHang/AccountCustomer";
+
 const NavigatorBrowser: React.FC = () => {
   return (
     <Router>
@@ -141,7 +145,7 @@ const Content: React.FC = () => {
   const location = useLocation();
 
   // Các trang không hiển thị menu
-  const hiddenMenuPaths = ["/login", "/register", "/forgot-password", "/profile", "/settings" ];
+  const hiddenMenuPaths = ["/login", "/register", "/forgot-password", "/profile", "/settings", "/booking", "/listbooking" ];
   const shouldShowMenu = !hiddenMenuPaths.includes(location.pathname);
 
   return (
@@ -153,9 +157,14 @@ const Content: React.FC = () => {
         {/* Các trang KHÔNG có trong Menu */}
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
+        <Route path="/booking" element={<BookingPage />} />
+        <Route path="/listbooking" element={<AppointmentList />} />
+        <Route path="/profile" element={<AccountCustomer />} />
+
+
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/getuserid" element={<GetUser />} />
-        <Route path="/profile" element={<ProfileDetail />} />
+        {/* <Route path="/profile" element={<ProfileDetail />} /> */}
         <Route path="/settings" element={<SettingsDetail />} />
       </Routes>
     </>

@@ -7,13 +7,13 @@ const Home: React.FC = () => {
   return (
     <div className="flex flex-col h-screen">
       {/* TrangChu - Luôn hiển thị khi cuộn */}
-      <div className="sticky top-0 z-50 bg-white shadow-md">
-        <TrangChu />
-      </div>
-
       {/* <div className="sticky top-0 z-50 bg-white shadow-md">
-        <Menu />
+        <TrangChu />
       </div> */}
+
+      <div className="sticky top-0 z-50 bg-white shadow-md">
+        <Menu />
+      </div>
 
       {/* Main content area */}
       {/* <div className="flex flex-grow overflow-hidden">
