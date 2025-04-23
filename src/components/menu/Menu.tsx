@@ -16,6 +16,7 @@ import Chatbot from "../google/Chatbot";
 import TrangChu from "../home/TrangChu";
 
 import AppointmentList from "../../page/appointment-LichHen/XemLichDatHen";
+import { User } from "lucide-react";
 
 const Menu: React.FC = () => {
     const location = useLocation(); // Lấy đường dẫn hiện tại
@@ -202,37 +203,6 @@ const Menu: React.FC = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
-            {/* Icon chat */}
-            {/* <div className="fixed bottom-6 right-[65px] z-50">
-                <div className="relative">
-                    <button
-                        className="p-5 bg-blue-600 text-white rounded-full shadow-lg transition-all hover:bg-blue-700 hover:scale-110"
-                        title={showChat ? "Đóng Chat" : "Mở Chat"}
-                        onClick={() => setShowChat((prev) => !prev)}
-                    >
-                        {showChat ? (
-                            <Close className="w-8 h-8" />
-                        ) : (
-                            <ChatBubbleOutlineOutlined className="w-8 h-8" />
-                        )}
-                    </button>
-
-                    <AnimatePresence>
-                        {showChat && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.8, y: 20 }}
-                                transition={{ duration: 0.25, ease: "easeOut" }}
-                                className="absolute bottom-[70px] right-0 w-[800px] h-[700px] bg-white rounded-xl shadow-2xl border border-gray-300 overflow-hidden"
-                            >
-                                <Chatbot />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            </div> */}
-
             {/* Nút icon chat */}
             {!showChat && (
                 <div className="fixed bottom-6 right-[65px] z-50">
@@ -285,7 +255,6 @@ const Menu: React.FC = () => {
                 </div>
             )}
 
-
             <div
                 className={`fixed top-0 w-full p-4 z-20 flex flex-wrap justify-between items-center transition-all duration-500  ${
                     isScrolled 
@@ -295,7 +264,7 @@ const Menu: React.FC = () => {
                 }`}>
 
                 {/* Menu điều hướng */}
-                <div className="flex-grow flex flex-wrap justify-center space-x-24 items-center">
+                <div className="flex-grow flex flex-wrap justify-center space-x-12 items-center">
                     <button onClick={() => navigation('/')} className="flex items-center space-x-4 hover:text-blue-500 uppercase">
                         <img 
                             src="/credit-card.png"
@@ -438,8 +407,15 @@ const Menu: React.FC = () => {
                 <div className="flex space-x-4">
                     {!user ? (
                         <div>
-                            <button onClick={toggleLoginForm} className="w-[120px] px-4 py-2 text-blue-500 border border-blue-500 bg-white rounded-full hover:bg-blue-500 hover:text-white transition duration-300 ml-4">Đăng nhập</button>
-                            <button onClick={() => handleNavigation('/register')} className="w-[120px] px-4 py-2 text-blue-500 border border-blue-500 bg-white rounded-full hover:bg-blue-500 hover:text-white transition duration-300 ml-2">Đăng ký</button>
+                            {/* <button onClick={toggleLoginForm} className="w-[120px] px-4 py-2 text-blue-500 border border-blue-500 bg-white rounded-full hover:bg-blue-500 hover:text-white transition duration-300 ml-4">Đăng nhập</button> */}
+                            {/* <button onClick={() => handleNavigation('/register')} className="w-[120px] px-4 py-2 text-blue-500 border border-blue-500 bg-white rounded-full hover:bg-blue-500 hover:text-white transition duration-300 ml-2">Đăng ký</button> */}
+                            <button 
+                                onClick={toggleLoginForm}
+                                className="flex items-center justify-center gap-2 w-[150px] px-4 py-2 text-blue-500 border border-blue-500 bg-white rounded-full hover:bg-blue-500 hover:text-white transition duration-300 ml-4"
+                                >
+                                <User className="w-5 h-5 -mt-[5px]"/>
+                                <span className="font-medium">Đăng nhập</span>
+                            </button>
                         </div>
                     ) : (
                         <div className="relative">
@@ -456,7 +432,7 @@ const Menu: React.FC = () => {
                             </button>
 
                             {isMenuOpen && (
-                                <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-xl border z-50 overflow-hidden animate-fade-in">
+                                <div className="absolute -right-4 mt-4 w-52 bg-white rounded-xl shadow-xl border z-50 overflow-hidden animate-fade-in">
                                     <ul className="divide-y text-sm text-gray-700">
                                         <li>
                                             <button
@@ -605,7 +581,8 @@ const Menu: React.FC = () => {
                         {activePage === "about" && <GioiThieu />}
                         {activePage === "services" && <DichVu />}
                         {/* {activePage === "schedule" && <AppointmentList />} */}
-                        {activePage === "product" && <DanhSachKH />}
+                        {/* {activePage === "product" && <DanhSachKH />} */}
+                        {activePage === "product" && <AppointmentList />}
                         {activePage === "news" && <TinTuc />}
                         {activePage === "contact" && <LienHe />}
                     </div>

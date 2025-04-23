@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, X } from "lucide-react"; // Biểu tượng mũi tên
 // import { ChatBubbleOutlineOutlined  } from "@mui/icons-material";
 import { motion } from "framer-motion"; 
+import { ServiceFull } from "../../interface/ServiceSPA_interface";
 
 const TrangChu = () => {
-    // const navigation = useNavigate();
+    const navigate = useNavigate();
     // const images = ["/trilieu1.png", "/trilieu2.jpg"]; // Danh sách ảnh
     const images = ["/anh-spa.jpg", "/anh-spa-docsach.jpg", "/anh-spa-8.jpg", "/anh-spa-3.jpg", "/anh-spa-6.jpg"]; // Danh sách ảnh
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -17,6 +18,9 @@ const TrangChu = () => {
     const sliderRef = useRef(null);
 
     const [showModal, setShowModal] = useState(true);
+
+    // const [selectedService, setSelectedService] = useState<ServiceFull | null>(null);
+    const [selectedService] = useState<ServiceFull | null>(null); // State để lưu thông tin dịch vụ được chọn
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -44,25 +48,47 @@ const TrangChu = () => {
         }, 400);
     };
 
-    // Khi bắt đầu kéo chuột
-    const handleMouseDown = (e) => {
-        e.preventDefault();
-        setIsDragging(true);
-        setStartX(e.clientX || e.touches[0].clientX);
+    // Khi bắt đầu kéo chuột hoặc cảm ứng
+    const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
+        e.preventDefault(); // Ngăn chặn hành vi mặc định của trình duyệt (ví dụ: cuộn trang khi chạm)
+        setIsDragging(true); // Bắt đầu trạng thái kéo
+        const clientX = "touches" in e ? e.touches[0].clientX : e.clientX; // Lấy vị trí X của chuột hoặc cảm ứng
+        setStartX(clientX); // Lưu vị trí bắt đầu
     };
 
     // Khi đang kéo
-    const handleMouseMove = (e) => {
-        if (!isDragging) return;
-        setEndX(e.clientX || e.touches[0].clientX);
+    const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
+        if (!isDragging) return; // Nếu không đang kéo thì không làm gì
+        const clientX = "touches" in e ? e.touches[0].clientX : e.clientX; // Lấy vị trí X hiện tại của chuột hoặc cảm ứng
+        setEndX(clientX); // Cập nhật vị trí hiện tại
     };
 
-    // Khi thả chuột
+    // Khi thả chuột hoặc dừng cảm ứng
     const handleMouseUp = () => {
-        setIsDragging(false);
-        const diff = startX - endX;
+        setIsDragging(false); // Kết thúc trạng thái kéo
+        const diff = startX - endX; // Tính khoảng cách kéo theo trục X
         if (diff > 50) nextImage(); // Kéo trái → ảnh tiếp theo
         if (diff < -50) prevImage(); // Kéo phải → ảnh trước đó
+    };
+
+    // Yêu cầu đăng nhập để được đặt lịch    
+    const handleBookingClick = (service: unknown) => {
+        const user = localStorage.getItem("user");
+    
+        if (!user) {
+            alert("Vui lòng đăng nhập để đặt lịch.");
+            navigate("/login");
+            return;
+        }
+        const selectedService = service;
+    
+        // navigate("/booking", { state: { selectedService } });
+        navigate("/booking", {
+            state: {
+              selectedService,
+              fromHome: true, // <- Thêm flag này
+            },
+        });          
     };
 
     // Kiểm tra trạng thái modal
@@ -122,7 +148,11 @@ const TrangChu = () => {
                             />
                             <div className="absolute inset-0 bg-black/30 text-white px-6 flex flex-col justify-end">
                                 <div className="text-center space-y-4 mb-6">
-                                    <button className="px-6 py-3 bg-white/90 text-indigo-600 font-semibold rounded-full shadow hover:bg-red-300 hover:text-white transition-all duration-300">
+                                    <button 
+                                        className="px-6 py-3 bg-white/90 text-indigo-600 font-semibold rounded-full shadow hover:bg-red-300 hover:text-white transition-all duration-300"
+                                        // onClick={() => navigate("/booking")}
+                                        onClick={() => handleBookingClick(selectedService)}
+                                        >
                                         Book lịch ngay
                                     </button>
                                 </div>

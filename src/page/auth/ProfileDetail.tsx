@@ -184,7 +184,7 @@ const ProfileDetail: React.FC = () => {
         <div className="hidden md:block w-px bg-gray-300" />
 
         {/* Cột phải: box từng phần */}
-        <div className="space-y-6">
+        <div className="">
           {/* Số điện thoại và Email */}
           <div>
             <p className="text-gray-900 font-semibold mb-4">Số điện thoại và Email</p>
@@ -223,11 +223,11 @@ const ProfileDetail: React.FC = () => {
                       placeholder="Nhập số điện thoại mới"
                       className="w-full border rounded px-4 py-2 mb-2"
                     />
-                    <p className="text-sm text-gray-600 mb-4">
+                    {/* <p className="text-sm text-gray-600 mb-4">
                       Mã xác thực (OTP) sẽ được gửi đến số điện thoại này để xác minh số điện thoại của bạn
-                    </p>
-                    <button className="bg-green-700 text-white font-semibold px-6 py-2 rounded w-full">
-                      Gửi OTP
+                    </p> */}
+                    <button className="bg-green-700 text-white font-semibold px-6 py-2 rounded-3xl w-full">
+                      Cập nhật
                     </button>
                   </div>
                 </div>
@@ -248,7 +248,7 @@ const ProfileDetail: React.FC = () => {
 
           {/* Bảo mật */}
           <div>
-            <p className="text-gray-900 font-semibold mb-4">Bảo mật</p>
+            <p className="text-gray-900 font-semibold mt-4 mb-4">Bảo mật</p>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3 text-sm text-gray-700">
                 <Lock className="w-4 h-4 text-gray-500" />

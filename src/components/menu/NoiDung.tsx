@@ -17,7 +17,7 @@ const NoiDung = () => {
     const sliderRef = useRef(null);
 
     const [showModal, setShowModal] = useState(true);
-
+    
     useEffect(() => {
         const interval = setInterval(() => {
             nextImage();
@@ -109,7 +109,7 @@ const NoiDung = () => {
                     </div>
                 </div>
             )} */}
-
+            
             {showModal && (
                 <motion.div
                     className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
@@ -146,7 +146,7 @@ const NoiDung = () => {
                             />
                             <div className="absolute inset-0 bg-black/30 text-white px-6 flex flex-col justify-end">
                                 <div className="text-center space-y-4 mb-6">
-                                    <button className="px-6 py-3 bg-white/90 text-indigo-600 font-semibold rounded-full shadow hover:bg-red-300 hover:text-white transition-all duration-300">
+                                    <button className="px-6 py-3 bg-white/90 text-indigo-600 font-semibold rounded-full shadow hover:bg-red-300 hover:text-white transition-all duration-300"                                     >
                                         Book lịch ngay
                                     </button>
                                 </div>

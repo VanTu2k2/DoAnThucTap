@@ -6,8 +6,8 @@ import AppointmentList from "../appointment-LichHen/XemLichDatHen";
 const tabs = [
   { key: "account", label: "Quản lý tài khoản" },
   { key: "profile", label: "Thông tin tài khoản" },
-  { key: "listbooking", label: "Booking của tôi" },
-  { key: "orders", label: "Đơn hàng của tôi" },
+  { key: "listbooking", label: "Lịch hẹn của tôi" },
+  { key: "orders", label: "Hóa đơn của tôi" },
   { key: "address", label: "Số địa chỉ nhận hàng" },
   { key: "favorite", label: "Danh sách yêu thích" },
 ];
@@ -66,7 +66,7 @@ const AccountCustomer: React.FC = () => {
       case "listbooking":        
         return (
           <div>
-            <h2 className="text-xl font-semibold mb-2">Booking của tôi</h2>
+            <h2 className="text-xl font-semibold mb-2">Danh sách lịch hẹn</h2>
             {/* Tabs phụ trong Booking */}
             <div className="flex space-x-6 border-b border-gray-200 mb-4">
               {[
@@ -86,24 +86,6 @@ const AccountCustomer: React.FC = () => {
                 </button>
               ))}
             </div>
-        
-            {/* Nội dung theo từng tab riêng biệt */}
-            {/* {bookingTab === "appointment" && (
-              <AppointmentList />
-            )}
-
-            {bookingTab === "history" && (
-              <div className="text-center mt-12">
-                <img
-                  src="No-data.png"
-                  alt="Empty History"
-                  className="mx-auto w-60 h-60"
-                />
-                <p className="mt-4 text-lg font-semibold text-gray-700">
-                  Bạn chưa có lịch sử nào
-                </p>
-              </div>
-            )} */}
 
             {bookingTab === "appointment" && (
               <AppointmentList filterByStatus={["PENDING", "SCHEDULED"]} />
@@ -113,6 +95,39 @@ const AccountCustomer: React.FC = () => {
               <AppointmentList filterByStatus={["CANCELLED", "COMPLETED"]} />
             )}
 
+          </div>
+        );
+
+        case "orders":        
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Danh sách hóa đơn</h2>
+            <div className="flex space-x-6 border-b border-gray-200 mb-4">
+              {[
+                { label: "Hóa đơn dịch vụ", key: "appointment" },
+                { label: "Hóa đơn sản phẩm", key: "history" },
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setBookingTab(tab.key)}
+                  className={`pb-1 text-sm font-medium transition-colors ${
+                    bookingTab === tab.key
+                      ? "text-orange-600 border-b-2 border-orange-600"
+                      : "text-gray-600 border-b-2 border-transparent hover:text-orange-500"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {bookingTab === "appointment" && (
+              <AppointmentList filterByStatus={["PENDING", "SCHEDULED"]} />
+            )}
+
+            {bookingTab === "history" && (
+              <AppointmentList filterByStatus={["CANCELLED", "COMPLETED"]} />
+            )}
 
           </div>
         );

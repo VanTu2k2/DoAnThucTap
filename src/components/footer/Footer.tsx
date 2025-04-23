@@ -1,84 +1,111 @@
-// import { SpaOutlined } from "@mui/icons-material";
+import { useNavigate } from "react-router-dom";
+import { Box } from "@mui/material";
+import { Phone, Email, AccessTime, Room } from "@mui/icons-material";
 
+const Footer = () => {
+    const navigate = useNavigate();
 
-// const Footer:React.FC = () => {
-//     return (
-//         <div className="flex flex-col justify-center  bg-white dark:bg-gray-800  text-gray-900 dark:text-white items-center p-1">
-//             <p style={{
-                
-//                 fontSize: "12px",
-//                 fontWeight: "bold",
-//                 textAlign: "center",
-//                 lineHeight: "16px",
-//                 letterSpacing: "0.4px",
-//                 opacity: "0.5" 
-//             }}>Copyright © 2025 CRM Massage. All rights reserved.</p>
-//             <SpaOutlined style={{
-                
-//                 fontSize: "24px",
-//                 fontWeight: "bold",
-//                 lineHeight: "16px",
-//                 letterSpacing: "0.4px",
-//                 opacity: "0.5"}}/>
-//         </div>
-//     );
-// }
+    // Hàm điều hướng và cuộn lên đầu
+    const handleNavigate = (path: string) => {
+        navigate(path);
+        window.scrollTo(0, 0);
+    };
 
-// export default Footer;
-
-const Footer: React.FC = () => {
     return (
-        <footer className="w-full bg-gray-800 text-white mt-auto">
-            {/* Nội dung Footer */}
-            <div className="container mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-6 text-center md:text-left">
-                
-                {/* Cột 1: Giới thiệu */}
+        <footer className="w-full bg-gradient-to-br from-[#1b4332] via-[#2d6a4f] to-[#40916c] text-white py-4 px-4">            
+            <div className="max-w-screen-2xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
+                {/* Thông tin liên hệ */}
                 <div>
-                    <h3 className="text-lg font-semibold mb-2">Về chúng tôi</h3>
-                    <p className="text-gray-400 text-sm">
-                        Chúng tôi chuyên cung cấp các dịch vụ massage trị liệu chất lượng cao, giúp khách hàng thư giãn và phục hồi năng lượng. 
-                        Sáng suốt lựa chọn nơi thẩm mỹ an toàn, uy tín nhất, nghĩa là bạn đang tôn trọng chính bạn.
-                    </p>
-                </div>
-                
-                {/* Cột 2: Giờ làm việc */}
-                <div>
-                    <h3 className="text-lg font-semibold mb-2">Giờ làm việc</h3>
-                    <p className="text-gray-400 text-sm">🕒 Thứ 2 - Chủ Nhật: 08:00 - 22:00</p>
-                    <p className="text-gray-400 text-sm">🌟 Phục vụ cả ngày lễ</p>
-                    <p className="text-gray-400 text-sm">🔒 Chính sách bảo mật</p>
-                </div>
-
-                {/* Cột 3: Dịch vụ */}
-                <div>
-                    <h3 className="text-lg font-semibold mb-2">Dịch vụ</h3>
-                    <ul className="text-gray-400 text-sm space-y-2">
-                        <li><a href="#" className="hover:text-white transition duration-200">Massage Thư Giãn</a></li>
-                        <li><a href="#" className="hover:text-white transition duration-200">Massage Trị Liệu</a></li>
-                        <li><a href="#" className="hover:text-white transition duration-200">Chăm Sóc Da</a></li>
-                        <li><a href="#" className="hover:text-white transition duration-200">Gói Dịch Vụ Đặc Biệt</a></li>
+                    <h3 className="text-lg font-semibold mb-4 tracking-wide border-b border-white/30 pb-2">Thông tin liên hệ</h3>
+                    <ul className="space-y-3 text-white/90">
+                        <li className="flex items-start">
+                            <Phone fontSize="small" className="mr-2 mt-1 text-[#ffd6a5]" />
+                            Hotline: 012 345 6789
+                        </li>
+                        <li className="flex items-start">
+                            <Email fontSize="small" className="mr-2 mt-1 text-[#ffd6a5]" />
+                            contact.jaloo.1@gmail.com
+                        </li>
+                        <li className="flex items-start">
+                            <AccessTime fontSize="small" className="mr-2 mt-1 text-[#ffd6a5]" />
+                            09:00 - 21:00 (Hằng ngày)
+                        </li>
+                        <li className="flex items-start">
+                            <Room fontSize="small" className="mr-2 mt-1 text-[#ffd6a5]" />
+                            Số 123 Đường ABC, Tp.Hồ Chí Minh
+                        </li>
                     </ul>
                 </div>
 
-                {/* Cột 4: Liên hệ */}
+                {/* Về Spa */}
                 <div>
-                    <h3 className="text-lg font-semibold mb-2">Liên hệ</h3>
-                    <p className="text-gray-400 text-sm">📍 123 Đường ABC, TP.HCM</p>
-                    <p className="text-gray-400 text-sm">📞 0909 123 456</p>
-                    <p className="text-gray-400 text-sm">✉ contact@crmmassage.com</p>
+                    <h3 className="text-lg font-semibold mb-4 tracking-wide border-b border-white/30 pb-2">Về Spa</h3>
+                    <ul className="space-y-2 text-white/90">
+                        <li className="hover:text-blue-400 cursor-pointer" onClick={() => handleNavigate("/gioithieu")}>Giới thiệu</li>
+                        <li className="hover:text-blue-400 cursor-pointer" onClick={() => handleNavigate("/dichvu")}>Dịch vụ Spa</li>
+                        <li className="hover:text-blue-400 cursor-pointer" onClick={() => handleNavigate("/lienhe")}>Liên hệ</li>
+                        <li className="hover:text-blue-400 cursor-pointer" onClick={() => handleNavigate("/sanpham")}>Sản phẩm</li>
+                    </ul>
+                </div>
+
+                {/* Hỗ trợ + Đăng ký */}
+                <div>
+                    <h3 className="text-lg font-semibold mb-4 tracking-wide border-b border-white/30 pb-2">Hỗ trợ</h3>
+                    <ul className="space-y-2 text-white/90 mb-6">
+                        <li className="hover:text-blue-400 cursor-pointer" onClick={() => handleNavigate("/lichsumuahang")}>Lịch sử mua hàng</li>
+                        <li className="hover:text-blue-400 cursor-pointer" onClick={() => handleNavigate("/lichsudatlich")}>Lịch sử đặt lịch</li>
+                        <li className="hover:text-blue-400 cursor-pointer" onClick={() => handleNavigate("/huongdanmuahang")}>Hướng dẫn mua online</li>
+                        <li className="hover:text-blue-400 cursor-pointer" onClick={() => handleNavigate("/huongdandatlich")}>Hướng dẫn đặt lịch</li>
+                    </ul>
+
+                    <h3 className="text-lg font-semibold mb-2">Nhận ưu đãi</h3>
+                    <div className="flex rounded-full overflow-hidden bg-white text-black max-w-sm shadow-md">
+                        <input
+                            type="email"
+                            placeholder="Email của bạn"
+                            className="flex-1 px-3 py-1 outline-none"
+                        />
+                        <button className="bg-orange-500 text-white px-3 font-medium whitespace-nowrap hover:bg-orange-600 transition-all">
+                            Đăng ký
+                        </button>
+                    </div>
+                </div>
+
+                {/* Google Map */}
+                <div>
+                    <h3 className="text-lg font-semibold mb-4 tracking-wide border-b border-white/30 pb-2">Bản đồ</h3>
+                    {/* MAP */}
+                    <Box
+                        sx={{
+                            mt: 2,
+                            height: 220,
+                            borderRadius: 2,
+                            overflow: "hidden",
+                            boxShadow: 1,
+                            width: "100%",
+                        }}
+                    >
+                        <iframe
+                            title="IUH - Trường Đại học Công nghiệp TP.HCM"
+                            src="https://www.google.com/maps?q=Trường+Đại+học+Công+nghiệp+TP.HCM&output=embed"
+                            width="100%"
+                            height="100%"
+                            style={{ border: 0 }}
+                            allowFullScreen //	Cho phép phóng to toàn màn hình
+                            loading="lazy"  // 	Tối ưu hiệu suất bằng cách tải khi cần
+                            referrerPolicy="no-referrer-when-downgrade"  // 	Bảo vệ thông tin referrer khi điều hướng đến trang khác
+                        />
+                    </Box>
                 </div>
             </div>
 
-            {/* Đường kẻ ngăn cách */}
-            <div className="border-t border-gray-700 my-4"></div>
-            
-            {/* Phần Copyright */}
-            <div className="text-center py-4 text-gray-400 text-sm">
-                <p>Copyright © 2025 CRM Massage. All rights reserved.</p>
+            {/* Footer Bottom */}
+            <div className="mt-4 text-center text-sm text-white/70 border-t border-white/20 pt-4">
+                {/* © 2025 CRM Massage - Lan tỏa sự thư giãn & phục hồi năng lượng. */}
+                Copyright © 2025 CRM Massage. All rights reserved.
             </div>
         </footer>
     );
 };
 
 export default Footer;
-

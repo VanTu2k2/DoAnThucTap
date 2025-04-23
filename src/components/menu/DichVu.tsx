@@ -1,11 +1,3 @@
-// import { useState, useEffect, useRef } from "react";
-// import { useNavigate, useLocation } from "react-router-dom";
-// import { useAuth } from "../../hook/AuthContext";
-// import { Container, Card, CardContent, Typography, Button, Box } from "@mui/material";
-// import { Spa, Star, Phone, LocationOn } from "@mui/icons-material";
-// import { motion } from "framer-motion";
-
-
 import { useState, useEffect } from "react";
 import { Button, Dialog, DialogContent, DialogTitle, Pagination, Container, Box, Typography, Divider, IconButton, Slider  } from "@mui/material";
 import { getServiceSPA, deleteServiceSPA, activateServiceSPA, deactivateServiceSPA } from "../../service/apiService";
@@ -86,21 +78,39 @@ const DichVu: React.FC = () => {
         }
     
         //  Sắp xếp theo sortType (trừ "nổi bật")
-        if  (sortType !== 'noibat') {
-            filtered.sort((a: any, b: any) => {
+        // if  (sortType !== 'noibat') {
+        //     filtered.sort((a: any, b: any) => {
+        //         switch (sortType) {
+        //             case 'giathapdencao':
+        //                 return a.price - b.price;
+        //             case 'giacaodenthap':
+        //                 return b.price - a.price;
+        //             case 'moinhat':
+        //                 return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        //             default:
+        //                 return 0; // không sắp xếp gì
+        //         }
+        //     });                                  
+        // }
+        //  Sắp xếp theo sortType (trừ "nổi bật")
+        if (sortType !== 'noibat') {
+            filtered.sort((a, b) => {
                 switch (sortType) {
                     case 'giathapdencao':
                         return a.price - b.price;
                     case 'giacaodenthap':
                         return b.price - a.price;
-                    case 'moinhat':
-                        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                    case 'moinhat': {
+                        const aCreated = (a as unknown as { createdAt: string }).createdAt;
+                        const bCreated = (b as unknown as { createdAt: string }).createdAt;
+                        return new Date(bCreated).getTime() - new Date(aCreated).getTime();
+                    }
                     default:
-                        return 0; // không sắp xếp gì
+                        return 0;
                 }
             });
         }
-    
+
         setServices(filtered); // Cập nhật dịch vụ sau khi lọc và sắp xếp
         setCurrentPage(1); // Quay lại trang đầu tiên
     
@@ -562,7 +572,12 @@ const DichVu: React.FC = () => {
                                             className="group cursor-pointer hover:shadow-lg transition-shadow">
 
                                             {/* Tên dịch vụ */}
-                                            <h3 className="text-lg font-bold text-gray-900 p-4 group-hover:text-green-700 transition-colors duration-200">
+                                            {/* <h3 className="text-lg font-bold text-gray-900 p-4 group-hover:text-green-700 transition-colors duration-200">
+                                                {service.name}
+                                            </h3> */}
+                                            <h3 
+                                                className="text-lg font-bold text-gray-900 p-4 group-hover:text-green-700 transition-colors duration-200 
+                                                            line-clamp-2 h-[4rem] leading-snug overflow-hidden">
                                                 {service.name}
                                             </h3>
 
@@ -701,7 +716,7 @@ const DichVu: React.FC = () => {
                                 <img
                                     src={mainImage || selectedService.images[0] || "https://media.hcdn.vn/catalog/category/1320x250-1.jpg"}
                                     alt={selectedService.name}
-                                    className="w-full h-60 object-cover transition-transform duration-300 hover:scale-105"
+                                    className="w-full object-cover transition-transform duration-300 hover:scale-105"
                                 />
                             </div>
                             
@@ -732,14 +747,14 @@ const DichVu: React.FC = () => {
                             <ul>
                                 {selectedService.steps.map((step) => (
                                     <li key={step.stepId} className="mb-2">
-                                        {step.stepOrder}. {step.description}
+                                        Bước {step.stepOrder}: {step.description}
                                     </li>
                                 ))}
                             </ul>
                         </DialogContent>
 
                         {/* Đặt hẹn & Chi tiết */}
-                        <div className="flex justify-end px-6 pb-6 pt-2 border-t">
+                        <div className="flex justify-end px-6 pb-2 pt-2 border-t">
                             <button className="bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white 
                                                 px-8 py-2 rounded-full text-lg font-medium shadow-md transition duration-300"
                                     // onClick={() => navigate("/booking", { state: { selectedService: selectedService } })}

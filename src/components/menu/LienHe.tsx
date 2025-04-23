@@ -275,16 +275,10 @@ const LienHe = () => {
                 Mọi chi tiết xin liên hệ với Siêu Spa tại:
             </Typography>
 
-            <Typography sx={{ mb: 1 }}><Phone fontSize="small" sx={{ mr: 1 }} />Hotline: 039 6868 789</Typography>
-            <Typography sx={{ mb: 1 }}><Email fontSize="small" sx={{ mr: 1 }} />info@sieuspa.vn</Typography>
-            <Typography sx={{ mb: 1 }}><AccessTime fontSize="small" sx={{ mr: 1 }} />09:30 - 21:30 (Tất cả các ngày trong tuần)</Typography>
-            <Typography sx={{ mt: 1 }}>
-                <Room fontSize="small" sx={{ mr: 1 }} />
-                CN1: 150D Nguyễn Văn Trỗi, P.14, Q. Phú Nhuận, Tp.HCM
-                <br />
-                <Room fontSize="small" sx={{ mr: 1 }} />
-                CN2: 10D Trần Nhật Duật, P.9, Q.1, Tp.HCM
-            </Typography>
+            <Typography sx={{ mb: 1 }}><Phone fontSize="small" sx={{ mr: 1 }}/>Hotline: 012 345 6789</Typography>
+            <Typography sx={{ mb: 1 }}><Email fontSize="small" sx={{ mr: 1 }}/>contact.jaloo.1@gmail.com</Typography>
+            <Typography sx={{ mb: 1 }}><AccessTime fontSize="small" sx={{ mr: 1 }}/>09:00 - 21:00 (Hằng ngày)</Typography>
+            <Typography sx={{ mt: 1 }}><Room fontSize="small" sx={{ mr: 1 }}/>Số 123 Đường ABC, Tp.Hồ Chí Minh</Typography>
             </Paper>
         </Box>
         </Box>
