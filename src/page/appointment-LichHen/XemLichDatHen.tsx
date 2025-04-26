@@ -86,6 +86,22 @@ const AppointmentList: React.FC<AppointmentListProps> = ({ filterByStatus }) => 
     fetchAppointments();
   }, []);
 
+  // Fetch dữ liệu API
+  // useEffect(() => {
+  //   console.log(`[${new Date().toLocaleTimeString()}] Đang fetch lần đầu`);
+  //   fetchAppointments(); // Fetch lần đầu
+  
+  //   const interval = setInterval(() => {
+  //     console.log(`[${new Date().toLocaleTimeString()}] Đang fetch dữ liệu mỗi 10 giây`);
+  //     fetchAppointments(); // Fetch liên tục 10s 1 lần
+  //   }, 10000);
+  
+  //   return () => {
+  //     console.log("Dừng fetch do rời khỏi trang");
+  //     clearInterval(interval);
+  //   };
+  // }, []);
+
   const handleCancel = (id: number) => {
     setConfirmCancelId(id); // lưu id lại
   };

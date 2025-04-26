@@ -1,4 +1,4 @@
-import { Box, Typography, Tabs, Tab, Card, CardMedia, CardContent, Button } from "@mui/material";
+import { Box, Typography, Tabs, Tab, Card, CardMedia, CardContent } from "@mui/material";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 

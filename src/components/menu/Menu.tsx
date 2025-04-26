@@ -1,22 +1,21 @@
 import { useState, useEffect, useRef } from "react";
-import { AccountCircleOutlined, LogoutOutlined, NotificationsActiveOutlined, SettingsOutlined, Visibility, VisibilityOff, Person, Lock, LockOpen, Search, ShoppingCart, Home, AutoAwesome, SelfImprovement, Spa, People, Article, ContactMail, EventNoteOutlined, ChatBubbleOutlineOutlined, ArrowUpwardOutlined, KeyboardArrowDown, Close, ShoppingBag, Schedule } from "@mui/icons-material";
-import { Avatar, Badge, IconButton, Box} from "@mui/material";
+import { AccountCircleOutlined, LogoutOutlined, SettingsOutlined, Visibility, VisibilityOff, Person, Lock, LockOpen, Search, ShoppingCart, Home, AutoAwesome, SelfImprovement, Spa, People, Article, ContactMail, EventNoteOutlined, ChatBubbleOutlineOutlined, ArrowUpwardOutlined, KeyboardArrowDown, Close, ShoppingBag, Schedule } from "@mui/icons-material";
+import { Avatar, Box} from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hook/AuthContext";
 import { loginUser, logout } from "../../service/apiService";
 import { motion, AnimatePresence } from "framer-motion";
-import NoiDung from "../menu/NoiDung";
-import DanhSachKH from "../../page/customer-KhachHang/Danh_sach_KH";
 import Footer from "../footer/Footer";
-import GioiThieu from "../menu/GioiThieu";
-import DichVu from "../menu/DichVu";
-import TinTuc from "../menu/TinTuc";
-import LienHe from "../menu/LienHe";
-import Chatbot from "../google/Chatbot";
-import TrangChu from "../home/TrangChu";
-
-import AppointmentList from "../../page/appointment-LichHen/XemLichDatHen";
 import { User } from "lucide-react";
+
+import TrangChu from "../../page/home-TrangChinh/TrangChu";
+import GioiThieu from "../../page/aboutus-GioiThieu/GioiThieu";
+import DichVu from "../../page/service-DichVu/DichVu";
+import SanPham from "../../page/product-SanPham/SanPham";
+import TinTuc from "../../page/news-TinTuc/TinTuc";
+import LienHe from "../../page/contact-LienHe/LienHe";
+
+import Chatbot from "../google/Chatbot";
 
 const Menu: React.FC = () => {
     const location = useLocation(); // Lấy đường dẫn hiện tại
@@ -574,13 +573,12 @@ const Menu: React.FC = () => {
             {/* Nội dung hiển thị bên dưới menu */}
             <div className={`text-lg ${activePage !== "home" ? "mt-20" : ""}`}>
                 {activePage === "home" ? (
-                    // <NoiDung />
                     <TrangChu />
                 ) : (
                     <div className="mt-2">
                         {activePage === "about" && <GioiThieu />}
                         {activePage === "services" && <DichVu />}
-                        {activePage === "product" && <AppointmentList />}
+                        {activePage === "product" && <SanPham />}
                         {activePage === "news" && <TinTuc />}
                         {activePage === "contact" && <LienHe />}
                     </div>
