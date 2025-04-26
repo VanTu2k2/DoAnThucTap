@@ -580,8 +580,6 @@ const Menu: React.FC = () => {
                     <div className="mt-2">
                         {activePage === "about" && <GioiThieu />}
                         {activePage === "services" && <DichVu />}
-                        {/* {activePage === "schedule" && <AppointmentList />} */}
-                        {/* {activePage === "product" && <DanhSachKH />} */}
                         {activePage === "product" && <AppointmentList />}
                         {activePage === "news" && <TinTuc />}
                         {activePage === "contact" && <LienHe />}

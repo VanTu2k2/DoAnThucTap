@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../../hook/AuthContext";
-import { Mail, User, Camera, Phone, Lock, X } from "lucide-react";
+import { Mail, User, Camera, Phone, Lock, X, Eye, EyeOff } from "lucide-react";
 
 const ProfileDetail: React.FC = () => {
   const { login, user } = useAuth();
@@ -9,6 +9,32 @@ const ProfileDetail: React.FC = () => {
 
   const [isEditing, setIsEditing] = useState(false);
   const [isChanged, setIsChanged] = useState(false);
+
+  const validatePassword = (password: string) => {
+    const lengthRegex = /^.{8,30}$/;
+    const uppercaseRegex = /[A-Z]/;
+    const lowercaseRegex = /[a-z]/;
+    const digitRegex = /[0-9]/;
+    const specialCharRegex = /[@]/;
+  
+    return (
+      lengthRegex.test(password) &&
+      uppercaseRegex.test(password) &&
+      lowercaseRegex.test(password) &&
+      digitRegex.test(password) &&
+      specialCharRegex.test(password)
+    );
+  };  
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
 
   const [formData, setFormData] = useState({
     name: user?.name || "",
@@ -52,6 +78,53 @@ const ProfileDetail: React.FC = () => {
       newFormData.description !== user?.description
     );
   };
+
+  const handleChangePassword = async () => {
+    setError("");
+    setSuccess("");
+  
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setError("Vui lòng điền đầy đủ thông tin.");
+      return;
+    }
+  
+    if (newPassword !== confirmPassword) {
+      setError("Mật khẩu mới không khớp.");
+      return;
+    }
+  
+    if (!validatePassword(newPassword)) {
+      setError("Mật khẩu không đáp ứng yêu cầu bảo mật.");
+      return;
+    }
+  
+    try {
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          oldPassword: currentPassword,
+          newPassword,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        throw new Error(data.message || "Đổi mật khẩu thất bại");
+      }
+  
+      setSuccess("Đổi mật khẩu thành công!");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowPasswordModal(false);
+    } catch (err) {
+      setError(err.message || "Có lỗi xảy ra.");
+    }
+  };  
 
   return (
     <div className="p-4 bg-white rounded-xl shadow max-w-6xl mx-auto">
@@ -258,7 +331,7 @@ const ProfileDetail: React.FC = () => {
                 className="text-sm bg-gray-100 text-gray-700 border px-4 py-1 rounded"
                 onClick={() => setShowPasswordModal(true)}
               >
-                Cập nhật
+                Thay đổi
               </button>
             </div>
           </div>
@@ -267,7 +340,6 @@ const ProfileDetail: React.FC = () => {
           {showPasswordModal && (
             <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
               <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-lg relative">
-                {/* Nút X đóng */}
                 <button
                   onClick={() => setShowPasswordModal(false)}
                   className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
@@ -278,31 +350,70 @@ const ProfileDetail: React.FC = () => {
                 <h2 className="text-lg font-semibold mb-4">Thay đổi mật khẩu</h2>
 
                 <div className="space-y-4">
-                  <div>
+                  {error && <p className="text-red-500 text-sm">{error}</p>}
+                  {success && <p className="text-green-600 text-sm">{success}</p>}
+
+                  <div className="relative">
                     <label className="block mb-1 font-medium">Mật khẩu hiện tại:</label>
                     <input
-                      type="password"
+                      type={showCurrentPassword ? "text" : "password"}
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
                       placeholder="Nhập mật khẩu cũ"
-                      className="w-full border rounded px-4 py-2"
+                      className="w-full border rounded px-4 py-2 pr-10"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      className="absolute right-2 mt-3 text-gray-500"
+                    >
+                      {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
-                  <div>
+
+                  <div className="relative">
                     <label className="block mb-1 font-medium">Mật khẩu mới:</label>
                     <input
-                      type="password"
-                      placeholder="Mật khẩu từ 6 đến 32 ký tự"
-                      className="w-full border rounded px-4 py-2"
+                      type={showNewPassword ? "text" : "password"}
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Nhập mật khẩu mới"
+                      className="w-full border rounded px-4 py-2 pr-10"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      className="absolute right-2 mt-3 text-gray-500"
+                    >
+                      {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                    <p className="text-xs text-red-400 mt-1">
+                      Mật khẩu phải có 8-30 ký tự, gồm chữ hoa, chữ thường, số và ít nhất 1 ký tự '@'
+                    </p>
                   </div>
-                  <div>
+
+                  <div className="relative">
                     <label className="block mb-1 font-medium">Nhập lại mật khẩu mới:</label>
                     <input
-                      type="password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
                       placeholder="Nhập lại mật khẩu mới"
-                      className="w-full border rounded px-4 py-2"
+                      className="w-full border rounded px-4 py-2 pr-10"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-2 mt-3 text-gray-500"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
-                  <button className="bg-green-700 text-white font-semibold px-6 py-2 rounded-3xl w-full">
+
+                  <button
+                    onClick={handleChangePassword}
+                    className="bg-green-700 text-white font-semibold px-6 py-2 rounded-3xl w-full"
+                  >
                     Cập nhật
                   </button>
                 </div>
@@ -310,30 +421,7 @@ const ProfileDetail: React.FC = () => {
             </div>
           )}
 
-          {/* Liên kết mạng xã hội */}
-          {/* <div>
-            <p className="text-gray-900 font-semibold mb-4">Liên kết mạng xã hội</p>
-
-            <div className="flex justify-between items-center mb-3">
-              <div className="flex items-center gap-3">
-                <img src="/facebook-icon.svg" alt="Facebook" className="w-5 h-5" />
-                <span className="text-sm">Facebook</span>
-              </div>
-              <button className="text-sm bg-gray-100 text-gray-700 border px-4 py-1 rounded">Cập nhật</button>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <img src="/google-icon.svg" alt="Google" className="w-5 h-5" />
-                <span className="text-sm">Google</span>
-              </div>
-              <button className="text-sm bg-green-100 text-green-800 border border-green-500 px-4 py-1 rounded">
-                Đã liên kết
-              </button>
-            </div>
-          </div> */}
         </div>
-
       </div>
     </div>
   );

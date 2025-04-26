@@ -92,22 +92,22 @@ const TrangChu = () => {
     };
 
     // Kiểm tra trạng thái modal
-    // useEffect(() => {
-    //     const modalClosed = localStorage.getItem("modalClosed");
-    //     if (modalClosed === "true") {
-    //         setShowModal(false);
-    //     }
-    // }, []);
+    useEffect(() => {
+        const modalClosed = localStorage.getItem("modalClosed");
+        if (modalClosed === "true") {
+            setShowModal(false);
+        }
+    }, []);
 
-    // // Đóng modal và lưu trạng thái vào localStorage
-    // const handleCloseModal = () => {
-    //     setShowModal(false);
-    //     localStorage.setItem("modalClosed", "true");
-    // };
-
+    // Đóng modal và lưu trạng thái vào localStorage
     const handleCloseModal = () => {
         setShowModal(false);
+        localStorage.setItem("modalClosed", "true");
     };
+
+    // const handleCloseModal = () => {
+    //     setShowModal(false);
+    // };
 
     return (
         <div className="flex flex-col min-h-screen">

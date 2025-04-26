@@ -9,6 +9,8 @@ import { ServiceFull, Category } from "../../interface/ServiceSPA_interface";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+// import { useInvoice } from "../../hook/invoice/InvoiceContext";
+
 const pageSize = 8;
 
 const DichVu: React.FC = () => {
@@ -24,6 +26,10 @@ const DichVu: React.FC = () => {
 
     const [categories, setCategories] = useState<Category[]>([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+
+    // const { addServiceToInvoice } = useInvoice();
+
+
     // Fetch categories khi load trang
     useEffect(() => {
         axios.get("/api/categories")
@@ -76,22 +82,7 @@ const DichVu: React.FC = () => {
                 Number(service.price) >= minPrice && Number(service.price) <= maxPrice
             );
         }
-    
-        //  Sắp xếp theo sortType (trừ "nổi bật")
-        // if  (sortType !== 'noibat') {
-        //     filtered.sort((a: any, b: any) => {
-        //         switch (sortType) {
-        //             case 'giathapdencao':
-        //                 return a.price - b.price;
-        //             case 'giacaodenthap':
-        //                 return b.price - a.price;
-        //             case 'moinhat':
-        //                 return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        //             default:
-        //                 return 0; // không sắp xếp gì
-        //         }
-        //     });                                  
-        // }
+
         //  Sắp xếp theo sortType (trừ "nổi bật")
         if (sortType !== 'noibat') {
             filtered.sort((a, b) => {
@@ -101,9 +92,10 @@ const DichVu: React.FC = () => {
                     case 'giacaodenthap':
                         return b.price - a.price;
                     case 'moinhat': {
-                        const aCreated = (a as unknown as { createdAt: string }).createdAt;
-                        const bCreated = (b as unknown as { createdAt: string }).createdAt;
-                        return new Date(bCreated).getTime() - new Date(aCreated).getTime();
+                        // const aCreated = (a as unknown as { createdAt: string }).createdAt;
+                        // const bCreated = (b as unknown as { createdAt: string }).createdAt;
+                        // return new Date(bCreated).getTime() - new Date(aCreated).getTime();
+                        return b.id - a.id; // Sắp xếp id giảm dần
                     }
                     default:
                         return 0;
@@ -603,6 +595,8 @@ const DichVu: React.FC = () => {
                                             <Typography fontSize={14}>{service.categoryId}</Typography>
 
                                             <Typography fontSize={14}>{service.serviceType}</Typography>
+
+                                            <Typography fontSize={14}>Xếp dv mới nhất: {service.id}</Typography>
                                         </motion.div>
 
                                         {/* Dấu gạch ngăn cách */}
@@ -755,6 +749,16 @@ const DichVu: React.FC = () => {
 
                         {/* Đặt hẹn & Chi tiết */}
                         <div className="flex justify-end px-6 pb-2 pt-2 border-t">
+                            {/* <button
+                                className="bg-gradient-to-r from-gray-300 to-gray-400 hover:from-pink-200 hover:to-pink-400 text-white 
+                                            px-8 py-2 rounded-full text-lg font-medium shadow-md transition duration-300 mr-4"
+                                onClick={() => {
+                                    addServiceToInvoice(selectedService);
+                                    navigate("/profile", { state: { tab: "orders" } }); // chuyển sang tab hóa đơn
+                                }}
+                                >
+                                Thêm vào hóa đơn
+                            </button> */}
                             <button className="bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white 
                                                 px-8 py-2 rounded-full text-lg font-medium shadow-md transition duration-300"
                                     // onClick={() => navigate("/booking", { state: { selectedService: selectedService } })}

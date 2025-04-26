@@ -92,15 +92,36 @@ export const updateStatusComplete = async (id: number) => {
 };
 
 // huy lich hen
+// export const updateStatusCancel = async (id: number) => {
+//   try {
+//     const response = await api.put(`/appointments/${id}/cancel`);
+//     return response.data;
+//   } catch (error: unknown) {
+//     if (axios.isAxiosError(error) && error.response) {
+//       throw error;
+//     } else {
+//       throw new Error("Khong the ket noidden server");
+//     }
+//   }
+// };
+
 export const updateStatusCancel = async (id: number) => {
   try {
+    console.log("⏳ Gửi yêu cầu hủy lịch với ID:", id); // 👈 Thêm log ở đây
     const response = await api.put(`/appointments/${id}/cancel`);
+    console.log("✅ Kết quả huỷ:", response.data); // 👈 Log kết quả thành công
     return response.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error) && error.response) {
+      console.error("❌ Lỗi khi hủy lịch:", {
+        status: error.response.status,
+        data: error.response.data,
+      }); // 👈 Log chi tiết lỗi trả về
       throw error;
     } else {
+      console.error("❌ Không thể kết nối đến server");
       throw new Error("Khong the ket noidden server");
     }
   }
 };
+

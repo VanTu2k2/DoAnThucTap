@@ -6,6 +6,8 @@ import { ServiceFull } from "../../interface/ServiceSPA_interface";
 
 import { useLocation } from "react-router-dom";
 
+import { useNavigate } from "react-router-dom";
+
 import dayjs from "dayjs";
 import "dayjs/locale/vi";
 
@@ -31,6 +33,123 @@ const BookingPage = () => {
 
     const currentUser = JSON.parse(localStorage.getItem("user") || "null");
 
+    const navigate = useNavigate();
+
+    // Thêm dịch vụ vào giỏ hàng
+    // CÁCH NÀY ĐƯỢC
+    // const handleAddToInvoice = () => {
+    //     const userId = currentUser?.id;
+    //     const hasSelectedServices = preSelectedService || selectedServices.length > 0;
+    
+    //     if (!userId) {
+    //         alert("Thiếu thông tin người dùng.");
+    //         return;
+    //     }
+    
+    //     if (!hasSelectedServices) {
+    //         alert("Vui lòng chọn ít nhất một dịch vụ.");
+    //         return;
+    //     }
+    
+    //     if (!appointmentDate || !selectedTime) {
+    //         alert("Vui lòng chọn ngày và giờ hẹn.");
+    //         return;
+    //     }
+    
+    //     const serviceIds = preSelectedService
+    //         ? [preSelectedService.id]
+    //         : selectedServices;
+    
+    //     const totalPrice = preSelectedService
+    //         ? preSelectedService.price
+    //         : services
+    //             .filter((s) => selectedServices.includes(s.id))
+    //             .reduce((sum, s) => sum + s.price, 0);
+    
+    //     const appointmentDateTime = `${appointmentDate}T${selectedTime}:00`;
+    
+    //     // Lấy dữ liệu hóa đơn từ localStorage, nếu có
+    //     const storedInvoiceData = JSON.parse(localStorage.getItem("invoiceData") || "[]");
+    
+    //     // Thêm dịch vụ mới vào hóa đơn
+    //     const newInvoiceData = {
+    //         userId,
+    //         guestName: currentUser?.name || "",
+    //         appointmentDateTime,
+    //         notes,
+    //         serviceIds: [...storedInvoiceData.serviceIds || [], ...serviceIds], // Kết hợp dịch vụ mới và cũ
+    //         totalPrice: (storedInvoiceData.totalPrice || 0) + totalPrice, // Cộng giá trị mới vào tổng
+    //     };
+    
+    //     // Lưu hóa đơn mới vào localStorage
+    //     localStorage.setItem("invoiceData", JSON.stringify(newInvoiceData));
+    
+    //     // Điều hướng tới trang hóa đơn
+    //     navigate("/profile/hoadondichvu", {
+    //         state: {
+    //             invoiceData: newInvoiceData,
+    //         },
+    //     });
+    // };
+
+
+    const handleAddToInvoice = () => {
+        const userId = currentUser?.id;
+        const hasSelectedServices = preSelectedService || selectedServices.length > 0;
+      
+        if (!userId) {
+          alert("Thiếu thông tin người dùng.");
+          return;
+        }
+      
+        if (!hasSelectedServices) {
+          alert("Vui lòng chọn ít nhất một dịch vụ.");
+          return;
+        }
+      
+        if (!appointmentDate || !selectedTime) {
+          alert("Vui lòng chọn ngày và giờ hẹn.");
+          return;
+        }
+      
+        const serviceIds = preSelectedService
+          ? [preSelectedService.id]
+          : selectedServices;
+      
+        const totalPrice = preSelectedService
+          ? preSelectedService.price
+          : services
+              .filter((s) => selectedServices.includes(s.id))
+              .reduce((sum, s) => sum + s.price, 0);
+      
+        const appointmentDateTime = `${appointmentDate}T${selectedTime}:00`;
+      
+        // Tạo hóa đơn mới
+        const newInvoice = {
+          id: Date.now(), // ID đơn giản, có thể đổi thành UUID nếu muốn
+          userId,
+          guestName: currentUser?.name || "",
+          appointmentDateTime,
+          notes,
+          serviceIds,
+          totalPrice,
+          status: "PENDING", // Trạng thái mặc định
+        };
+      
+        // Lấy danh sách hóa đơn hiện có
+        const stored = localStorage.getItem("allInvoices");
+        const allInvoices = stored ? JSON.parse(stored) : [];
+      
+        // Thêm hóa đơn mới
+        const updatedInvoices = [...allInvoices, newInvoice];
+      
+        // Lưu lại danh sách
+        localStorage.setItem("allInvoices", JSON.stringify(updatedInvoices));
+      
+        // Chuyển hướng
+        navigate("/profile/orders");
+    };    
+    
     const handleToggleService = (id: number) => {
         if (selectedServices.includes(id)) {
             setSelectedServices((prev) => prev.filter((s) => s !== id));
@@ -248,58 +367,6 @@ const BookingPage = () => {
                         </div>
                     </div>
                 ) : (
-                    // <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    //     {services.map((s) => (
-                    //         <div
-                    //             key={s.id}
-                    //             className={`border rounded-lg p-3 flex gap-3 items-center ${
-                    //                 selectedServices.includes(s.id) ? "bg-blue-100 border-blue-500" : ""
-                    //             }`}
-                    //             >
-                    //             <img src={s.images?.[0]} alt="" className="w-24 h-24 object-cover rounded" />
-                    //             <div className="flex-1">
-                    //                 <p className="font-semibold">{s.name}</p>
-                    //                 <p className="text-sm text-gray-500">{s.price.toLocaleString()} VND</p>
-                    //                 <label className="flex items-center gap-2 mt-2">
-                    //                 <input
-                    //                     type="checkbox"
-                    //                     checked={selectedServices.includes(s.id)}
-                    //                     onChange={() => handleToggleService(s.id)}
-                    //                 />
-                    //                 <span>Chọn dịch vụ</span>
-                    //                 </label>
-                    //             </div>
-                    //         </div>
-                    //     ))}
-                    // </div>
-
-                    // <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    //     {services
-                    //     .filter((s) => s.name.toLowerCase().includes(searchTerm.toLowerCase()))
-                    //     .map((s) => (
-                    //         <div
-                    //             key={s.id}
-                    //             className={`border rounded-lg p-3 flex gap-3 items-center ${
-                    //                 selectedServices.includes(s.id) ? "bg-blue-100 border-blue-500" : ""
-                    //             }`}
-                    //         >
-                    //             <img src={s.images?.[0]} alt="" className="w-24 h-24 object-cover rounded" />
-                    //             <div className="flex-1">
-                    //                 <p className="font-semibold">{s.name}</p>
-                    //                 <p className="text-sm text-gray-500">{s.price.toLocaleString()} VND</p>
-                    //                 <label className="flex items-center gap-2 mt-2">
-                    //                     <input
-                    //                         type="checkbox"
-                    //                         checked={selectedServices.includes(s.id)}
-                    //                         onChange={() => handleToggleService(s.id)}
-                    //                     />
-                    //                     <span>Chọn dịch vụ</span>
-                    //                 </label>
-                    //             </div>
-                    //         </div>
-                    //     ))}
-                    // </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {paginatedServices.map((s) => (
                         <div
@@ -479,8 +546,6 @@ const BookingPage = () => {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                 />
-                
-                {/* Tổng tiền */}
                 <div className="text-right mt-4 text-lg font-bold">
                     Tổng tiền:{" "}
                     <span className="text-orange-500">
@@ -494,13 +559,75 @@ const BookingPage = () => {
                 </div>
             </section>
 
+            {/* BƯỚC 5: Thanh toán */}
+            {/* <section>
+                <h3 className="text-xl font-semibold mb-4">5. Thanh toán</h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <label className="cursor-pointer border rounded-lg p-4 flex items-center gap-3 hover:border-orange-500 transition-all">
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="online"
+                            className="form-radio text-orange-500"
+                        />
+                        <div>
+                            <p className="font-medium text-gray-800">Thanh toán Online</p>
+                            <p className="text-sm text-gray-500">Quét mã QR hoặc ví điện tử</p>
+                        </div>
+                    </label>
+
+                    <label className="cursor-pointer border rounded-lg p-4 flex items-center gap-3 hover:border-orange-500 transition-all">
+                        <input
+                            type="radio"
+                            name="paymentMethod"
+                            value="counter"
+                            className="form-radio text-orange-500"
+                        />
+                        <div>
+                            <p className="font-medium text-gray-800">Thanh toán tại quầy</p>
+                            <p className="text-sm text-gray-500">Thanh toán khi đến Spa</p>
+                        </div>
+                    </label>
+                </div>
+                
+                <div className="text-right mt-4 text-lg font-bold">
+                    Tổng tiền:{" "}
+                    <span className="text-orange-500">
+                        {(preSelectedService
+                        ? preSelectedService.price
+                        : services
+                            .filter((s) => selectedServices.includes(s.id))
+                            .reduce((sum, s) => sum + s.price, 0)
+                        ).toLocaleString("vi-VN")} VND
+                    </span>
+                </div>
+            </section> */}
+
         
             {/* Nút xác nhận */}
-            <button
+            {/* <button
                 onClick={handleSubmit}
                 className="mt-6 w-full bg-blue-600 text-white font-semibold py-3 rounded hover:bg-blue-700">
                 Xác nhận đặt lịch
-            </button>
+            </button> */}
+
+            {/* Đặt hẹn & Chi tiết */}
+            <div className="flex justify-end px-6 pb-2 pt-2 border-t">
+                <button
+                    className="bg-gradient-to-r from-gray-300 to-gray-400 hover:from-pink-200 hover:to-pink-400 text-white 
+                                px-8 py-2 rounded-full text-lg font-medium shadow-md transition duration-300 mr-4"
+                    onClick={handleAddToInvoice}
+                    >
+                    Thêm vào dịch vụ chờ
+                </button>
+
+                <button className="bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white 
+                                px-8 py-2 rounded-full text-lg font-medium shadow-md transition duration-300"
+                        onClick={handleSubmit}>
+                    Xác nhận đặt lịch
+                </button>
+            </div>
         </div>
     );
 };
