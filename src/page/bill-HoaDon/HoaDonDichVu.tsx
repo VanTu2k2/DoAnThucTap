@@ -27,7 +27,9 @@ const groupByDate = (invoices: Invoice[]) => {
   }, {});
 };
 
-const InvoiceList: React.FC<{ filterByStatus: string[] }> = ({ filterByStatus }) => {
+// const InvoiceList: React.FC<{ filterByStatus: string[] }> = ({ filterByStatus }) => {
+const InvoiceList: React.FC<{ filterByStatus: string[], currentUserId: string }> = ({ filterByStatus, currentUserId }) => {
+
   const [groupedInvoices, setGroupedInvoices] = useState<Record<string, Invoice[]>>({});
   const [loading, setLoading] = useState(true);
   const [allServices, setAllServices] = useState<Service[]>([]);
@@ -49,7 +51,9 @@ const InvoiceList: React.FC<{ filterByStatus: string[] }> = ({ filterByStatus })
     const fetchInvoices = async () => {
       setLoading(true);
       try {
-        const storedInvoices = JSON.parse(localStorage.getItem("allInvoices") || "[]") as unknown;
+        // const storedInvoices = JSON.parse(localStorage.getItem("allInvoices") || "[]") as unknown;
+        const storedInvoices = JSON.parse(localStorage.getItem(`invoices_${currentUserId}`) || "[]") as unknown;
+
         const invoices = Array.isArray(storedInvoices)
           ? (storedInvoices as Invoice[])
           : [];
@@ -101,14 +105,18 @@ const InvoiceList: React.FC<{ filterByStatus: string[] }> = ({ filterByStatus })
     try {
       alert("Đặt lịch thành công cho ngày này!");
 
-      const stored = JSON.parse(localStorage.getItem("allInvoices") || "[]") as unknown;
+      // const stored = JSON.parse(localStorage.getItem("allInvoices") || "[]") as unknown;
+      const stored = JSON.parse(localStorage.getItem(`invoices_${currentUserId}`) || "[]") as unknown;
+
       const updated = (Array.isArray(stored) ? stored : []).filter((inv: unknown): inv is Invoice =>
         typeof inv === "object" &&
         inv !== null &&
         !invoices.some((i) => i.id === (inv as Invoice).id)
       );
 
-      localStorage.setItem("allInvoices", JSON.stringify(updated));
+      // localStorage.setItem("allInvoices", JSON.stringify(updated));
+      localStorage.setItem(`invoices_${currentUserId}`, JSON.stringify(updated));
+
       const grouped = groupByDate(updated.filter((inv) => filterByStatus.includes(inv.status)));
       // const filtered = updated.filter((inv: Invoice) => filterByStatus.includes(inv.status));
       // const grouped = groupByDate(filtered);

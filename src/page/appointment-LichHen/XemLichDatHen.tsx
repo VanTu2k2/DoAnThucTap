@@ -241,10 +241,27 @@ const AppointmentList: React.FC<AppointmentListProps> = ({ filterByStatus }) => 
                           {dayjs((appointment as { updatedAt?: string }).updatedAt!).format("HH:mm DD/MM/YYYY")}
                         </p>
 
-                        {dayjs().diff(dayjs((appointment as { updatedAt?: string }).updatedAt!), "hour") < 2 ? (
+                        {/* {dayjs().diff(dayjs((appointment as { updatedAt?: string }).updatedAt!), "hour") < 2 ? (
                           <p className="text-xs text-green-600 italic">
                             Bạn còn {120 - dayjs().diff(dayjs((appointment as { updatedAt?: string }).updatedAt!), "minute")} phút để hủy lịch hẹn.
                           </p>
+                        ) : (
+                          <p className="text-xs text-red-500 italic">
+                            Bạn chỉ có thể hủy trong vòng 2 tiếng sau khi được xác nhận.
+                          </p>
+                        )} */}
+
+                        {dayjs().diff(dayjs((appointment as { updatedAt?: string }).updatedAt!), "hour") < 2 ? (
+                        (() => {
+                          const minutesLeft = 120 - dayjs().diff(dayjs((appointment as { updatedAt?: string }).updatedAt!), "minute");
+                          const hours = Math.floor(minutesLeft / 60);
+                          const minutes = minutesLeft % 60;
+                          return (
+                            <p className="text-xs text-green-600 italic">
+                              Bạn còn {hours} giờ {minutes} phút để hủy lịch hẹn.
+                            </p>
+                          );
+                        })()
                         ) : (
                           <p className="text-xs text-red-500 italic">
                             Bạn chỉ có thể hủy trong vòng 2 tiếng sau khi được xác nhận.

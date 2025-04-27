@@ -13,7 +13,7 @@ import BookingPage from "../page/appointment-LichHen/DatLichhen";
 import AppointmentList from "../page/appointment-LichHen/XemLichDatHen";
 import AccountCustomer from "../page/customer-KhachHang/AccountCustomer";
 
-// import PaymentSuccess from "../page/Payment/PaymentSuccess";
+import PaymentSuccess from "../page/Payment/PaymentSuccess";
 
 const NavigatorBrowser: React.FC = () => {
   return (
@@ -45,7 +45,7 @@ const Content: React.FC = () => {
         {/* <Route path="/profile" element={<AccountCustomer />} /> */}
         <Route path="/profile/*" element={<AccountCustomer />} />
 
-        {/* <Route path="/payment-success" element={<PaymentSuccess />}></Route> */}
+        <Route path="/payment-success" element={<PaymentSuccess />}></Route>
 
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/getuserid" element={<GetUser />} />

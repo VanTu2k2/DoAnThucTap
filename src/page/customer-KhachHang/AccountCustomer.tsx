@@ -140,13 +140,12 @@ const AccountCustomer: React.FC = () => {
             </div>
 
             {invoiceTab === "bookingdelay" && (
-              <InvoiceList filterByStatus={["PENDING"]} />
+              <InvoiceList filterByStatus={["PENDING"]} currentUserId={user?.id} />
             )}
 
             {invoiceTab === "productcart" && (
-              <InvoiceList filterByStatus={["PAID"]} />
+              <InvoiceList filterByStatus={["PAID"]} currentUserId={user?.id} />
             )}
-
           </div>
         );
 

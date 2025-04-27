@@ -35,64 +35,6 @@ const BookingPage = () => {
 
     const navigate = useNavigate();
 
-    // Thêm dịch vụ vào giỏ hàng
-    // CÁCH NÀY ĐƯỢC
-    // const handleAddToInvoice = () => {
-    //     const userId = currentUser?.id;
-    //     const hasSelectedServices = preSelectedService || selectedServices.length > 0;
-    
-    //     if (!userId) {
-    //         alert("Thiếu thông tin người dùng.");
-    //         return;
-    //     }
-    
-    //     if (!hasSelectedServices) {
-    //         alert("Vui lòng chọn ít nhất một dịch vụ.");
-    //         return;
-    //     }
-    
-    //     if (!appointmentDate || !selectedTime) {
-    //         alert("Vui lòng chọn ngày và giờ hẹn.");
-    //         return;
-    //     }
-    
-    //     const serviceIds = preSelectedService
-    //         ? [preSelectedService.id]
-    //         : selectedServices;
-    
-    //     const totalPrice = preSelectedService
-    //         ? preSelectedService.price
-    //         : services
-    //             .filter((s) => selectedServices.includes(s.id))
-    //             .reduce((sum, s) => sum + s.price, 0);
-    
-    //     const appointmentDateTime = `${appointmentDate}T${selectedTime}:00`;
-    
-    //     // Lấy dữ liệu hóa đơn từ localStorage, nếu có
-    //     const storedInvoiceData = JSON.parse(localStorage.getItem("invoiceData") || "[]");
-    
-    //     // Thêm dịch vụ mới vào hóa đơn
-    //     const newInvoiceData = {
-    //         userId,
-    //         guestName: currentUser?.name || "",
-    //         appointmentDateTime,
-    //         notes,
-    //         serviceIds: [...storedInvoiceData.serviceIds || [], ...serviceIds], // Kết hợp dịch vụ mới và cũ
-    //         totalPrice: (storedInvoiceData.totalPrice || 0) + totalPrice, // Cộng giá trị mới vào tổng
-    //     };
-    
-    //     // Lưu hóa đơn mới vào localStorage
-    //     localStorage.setItem("invoiceData", JSON.stringify(newInvoiceData));
-    
-    //     // Điều hướng tới trang hóa đơn
-    //     navigate("/profile/hoadondichvu", {
-    //         state: {
-    //             invoiceData: newInvoiceData,
-    //         },
-    //     });
-    // };
-
-
     const handleAddToInvoice = () => {
         const userId = currentUser?.id;
         const hasSelectedServices = preSelectedService || selectedServices.length > 0;
@@ -137,14 +79,21 @@ const BookingPage = () => {
         };
       
         // Lấy danh sách hóa đơn hiện có
-        const stored = localStorage.getItem("allInvoices");
-        const allInvoices = stored ? JSON.parse(stored) : [];
+        // const stored = localStorage.getItem("allInvoices");
+        // const allInvoices = stored ? JSON.parse(stored) : [];
       
-        // Thêm hóa đơn mới
-        const updatedInvoices = [...allInvoices, newInvoice];
+        // // Thêm hóa đơn mới
+        // const updatedInvoices = [...allInvoices, newInvoice];
       
-        // Lưu lại danh sách
-        localStorage.setItem("allInvoices", JSON.stringify(updatedInvoices));
+        // // Lưu lại danh sách
+        // localStorage.setItem("allInvoices", JSON.stringify(updatedInvoices));
+
+        const stored = localStorage.getItem(`invoices_${userId}`);
+        const userInvoices = stored ? JSON.parse(stored) : [];
+
+        const updatedInvoices = [...userInvoices, newInvoice];
+
+        localStorage.setItem(`invoices_${userId}`, JSON.stringify(updatedInvoices));
       
         // Chuyển hướng
         navigate("/profile/orders");
@@ -493,7 +442,7 @@ const BookingPage = () => {
                     </div>
 
                     {/* Khung giờ */}
-                    <div>
+                    {/* <div>
                         <label className="block mb-1 font-medium">
                             Khung giờ: <i className="text-gray-500">(Vui lòng chọn ngày hẹn trước)</i>
                         </label>
@@ -505,7 +454,7 @@ const BookingPage = () => {
 
                                 // Nếu đang chọn hôm nay và giờ hẹn đã qua → disable
                                 const isPast = isToday && slotTime.isBefore(currentTime);
-
+                                
                                 return (
                                     <button
                                         key={slot}
@@ -519,6 +468,46 @@ const BookingPage = () => {
                                         {slot}
                                     </button>
                                 );
+                            })}
+                        </div>
+                    </div> */}
+
+                    <div>
+                        <label className="block mb-1 font-medium">
+                            Khung giờ: <i className="text-gray-500">(Vui lòng chọn ngày hẹn trước)</i>
+                        </label>
+                        <div className="grid grid-cols-4 gap-2 mt-2 w-full md:w-2/3">
+                            {timeSlots.map((slot) => {
+                            const isToday = dayjs().format("YYYY-MM-DD") === appointmentDate;
+                            const currentTime = dayjs();
+                            const slotTime = dayjs(`${appointmentDate} ${slot}`, "YYYY-MM-DD HH:mm");
+
+                            const isPast = isToday && slotTime.isBefore(currentTime);
+                            const isTooSoon = isToday && slotTime.diff(currentTime, "minute") < 120;
+
+                            const isDisabled = !appointmentDate || isPast || isTooSoon;
+
+                            return (
+                                <div key={slot} className="flex flex-col items-center">
+                                <button
+                                    onClick={() => !isDisabled && setSelectedTime(slot)}
+                                    className={`py-2 px-4 rounded-lg text-sm transition-all w-full
+                                    ${selectedTime === slot ? "bg-orange-500 text-white" : "bg-green-100 text-gray-800"}
+                                    ${isDisabled ? "opacity-50 cursor-not-allowed" : "hover:bg-orange-100"}
+                                    `}
+                                    disabled={isDisabled}
+                                >
+                                    {slot}
+                                </button>
+
+                                {/* Hiện nhắc nhở nếu bị disable vì còn dưới 2 tiếng */}
+                                {isTooSoon && !isPast && (
+                                    <p className="text-[10px] text-red-500 italic mt-1 text-center">
+                                    Đặt lịch trước 2 tiếng nhé!
+                                    </p>
+                                )}
+                                </div>
+                            );
                             })}
                         </div>
                     </div>
@@ -603,14 +592,6 @@ const BookingPage = () => {
                     </span>
                 </div>
             </section> */}
-
-        
-            {/* Nút xác nhận */}
-            {/* <button
-                onClick={handleSubmit}
-                className="mt-6 w-full bg-blue-600 text-white font-semibold py-3 rounded hover:bg-blue-700">
-                Xác nhận đặt lịch
-            </button> */}
 
             {/* Đặt hẹn & Chi tiết */}
             <div className="flex justify-end px-6 pb-2 pt-2 border-t">

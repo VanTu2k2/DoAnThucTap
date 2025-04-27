@@ -249,7 +249,7 @@ const PaymentModal: React.FC<Props> = ({ open, onClose, appointment, onUpdateSuc
                             disabled={isProcessingPayment}
                         >
                             {isProcessingPayment ? "Đang tiến hành..." :
-                                <div className='flex items-center gap-2'>
+                                <div className='flex items-center justify-center gap-2'>
                                     <Payment />
                                     <p>Thanh toán VNPay</p>
                                 </div>
