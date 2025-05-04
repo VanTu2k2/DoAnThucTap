@@ -20,7 +20,7 @@ import Chatbot from "../google/Chatbot";
 const Menu: React.FC = () => {
     const location = useLocation(); // Lấy đường dẫn hiện tại
     const navigation = useNavigate();
-    const isActive = (path: string) => location.pathname === path;  // Kiểm tra mục đang chọn
+    // const isActive = (path: string) => location.pathname === path;  // Kiểm tra mục đang chọn
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isLoginOpen, setIsLoginOpen] = useState(false);
     const { login, user, logoutContext } = useAuth();
@@ -42,35 +42,72 @@ const Menu: React.FC = () => {
 
     const [activePage, setActivePage] = useState("home");
 
-    const [hoveredMenu, setHoveredMenu] = useState(null);
-    let timeoutId = null;
+    // const [hoveredMenu, setHoveredMenu] = useState(null);
+    // let timeoutId = null;
 
-    const handleMouseEnter = (id) => {
-        clearTimeout(timeoutId); // Xóa timeout để submenu không bị ẩn ngay lập tức
+    // const handleMouseEnter = (id) => {
+    //     clearTimeout(timeoutId); // Xóa timeout để submenu không bị ẩn ngay lập tức
+    //     setHoveredMenu(id);
+    // };
+
+    // const handleMouseLeave = () => {
+    //     timeoutId = setTimeout(() => setHoveredMenu(null), 300); // Delay 300ms trước khi ẩn submenu
+    // }; 
+
+    const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const handleMouseEnter = (id: string) => {
+        if (timeoutId) {
+            clearTimeout(timeoutId); // Xóa timeout để submenu không bị ẩn ngay lập tức
+        }
         setHoveredMenu(id);
     };
 
     const handleMouseLeave = () => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
         timeoutId = setTimeout(() => setHoveredMenu(null), 300); // Delay 300ms trước khi ẩn submenu
-    }; 
+    };
     
     // Danh sách menu
-    const menuItems = [
+    // const menuItems = [
+    //     { id: "home", label: "Trang chủ", path: "/trangchu" },
+    //     { id: "about", label: "Giới thiệu", path: "/gioithieu" },
+    //     { id: "services", label: "Dịch vụ", path: "/dichvu",},
+    //     { id: "product", label: "Sản phẩm", path: "/sanpham" },
+    //     { id: "news", label: "Tin tức", path: "/tintuc" },
+    //     { id: "contact", label: "Liên hệ", path: "/lienhe" }
+    // ];
+    
+    interface SubItem {
+        id: string;
+        label: string;
+        path: string;
+        icon: JSX.Element;
+    }
+    
+    interface MenuItem {
+        id: string;
+        label: string;
+        path: string;
+        subItems?: SubItem[]; // subItems có thể có hoặc không
+    }
+
+    const menuItems: MenuItem[] = [
         { id: "home", label: "Trang chủ", path: "/trangchu" },
         { id: "about", label: "Giới thiệu", path: "/gioithieu" },
-        { id: "services", label: "Dịch vụ", path: "/dichvu",},
+        { id: "services", label: "Dịch vụ", path: "/dichvu" },
         { id: "product", label: "Sản phẩm", path: "/sanpham" },
-        // { id: "schedule", label: "Lịch hẹn", path: "/lichhen" },
         { id: "news", label: "Tin tức", path: "/tintuc" },
         { id: "contact", label: "Liên hệ", path: "/lienhe" }
     ];
-    
 
     const iconMap = {
         home: <Home fontSize="medium" className="text-green-500 relative mb-1" />, 
         about: <AutoAwesome fontSize="medium" className="text-green-500 relative mb-1" />,
         services: <Spa fontSize="medium" className="text-green-500 relative mb-1" />, 
-        // schedule: <Schedule fontSize="medium" className="text-green-500 relative mb-1" />, 
         product: <ShoppingBag fontSize="medium" className="text-green-500 relative mb-1" />, 
         news: <Article fontSize="medium" className="text-green-500 relative mb-1" />, 
         contact: <ContactMail fontSize="medium" className="text-green-500 relative mb-1" />
@@ -140,13 +177,27 @@ const Menu: React.FC = () => {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    // const handleLogout = async () => {
+    //     try {
+    //         await logout();
+    //         logoutContext();
+    //         setIsMenuOpen(false);
+    //     } catch (error: any) {
+    //         console.log("Error:", error.response?.data?.message || error.message);
+    //     }
+    // };
+
     const handleLogout = async () => {
         try {
             await logout();
             logoutContext();
             setIsMenuOpen(false);
-        } catch (error: any) {
-            console.log("Error:", error.response?.data?.message || error.message);
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                console.log("Error:", error.message);
+            } else {
+                console.log("Unknown error:", error);
+            }
         }
     };
 
@@ -175,30 +226,60 @@ const Menu: React.FC = () => {
     };
     
 
+    // const handleSubmit = async (e: React.FormEvent) => {
+    //     e.preventDefault();
+    //     setIsLoading(true); // Hiện trạng thái đang tải
+    //     try {
+    //         const response = await loginUser(formData);
+    //         login(response.data.user);
+    //         setMessage(""); // Xóa thông báo lỗi nếu đăng nhập thành công
+
+    //         // Reset form và trạng thái focus
+    //         setFormData({ email: "", password: "" });
+    //         setFocused({ email: false, password: false }); // Reset trạng thái focus
+    //         setIsLoginOpen(false); // Đóng form đăng nhập
+
+    //     } catch (error: any) {
+    //         const errorMessage = error.response?.data?.message || error.message;
+    //         if (errorMessage.includes("Invalid email or password")) {
+    //             setMessage("Email hoặc mật khẩu không đúng!");
+    //         } else {
+    //             setMessage(`Đăng nhập thất bại: ${errorMessage}`);
+    //         }
+    //     } finally {
+    //         setIsLoading(false); // Tắt trạng thái đang tải
+    //     }
+    // };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true); // Hiện trạng thái đang tải
+    
         try {
             const response = await loginUser(formData);
             login(response.data.user);
             setMessage(""); // Xóa thông báo lỗi nếu đăng nhập thành công
-
+    
             // Reset form và trạng thái focus
             setFormData({ email: "", password: "" });
             setFocused({ email: false, password: false }); // Reset trạng thái focus
             setIsLoginOpen(false); // Đóng form đăng nhập
-
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || error.message;
-            if (errorMessage.includes("Invalid email or password")) {
-                setMessage("Email hoặc mật khẩu không đúng!");
+    
+        } catch (error: unknown) {
+            if (error instanceof Error) {
+                const errorMessage = error.message;
+                if (errorMessage.includes("Invalid email or password")) {
+                    setMessage("Email hoặc mật khẩu không đúng!");
+                } else {
+                    setMessage(`Đăng nhập thất bại: ${errorMessage}`);
+                }
             } else {
-                setMessage(`Đăng nhập thất bại: ${errorMessage}`);
+                setMessage("Đã xảy ra lỗi không xác định.");
             }
         } finally {
             setIsLoading(false); // Tắt trạng thái đang tải
         }
-    };
+    };    
 
     return (
         <div className="flex flex-col min-h-screen">

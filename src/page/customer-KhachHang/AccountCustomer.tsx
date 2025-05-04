@@ -4,14 +4,16 @@ import ProfileDetail from "../auth/ProfileDetail";
 import AppointmentList from "../appointment-LichHen/XemLichDatHen";
 import { useLocation, useNavigate } from "react-router-dom";
 import InvoiceList from "../bill-HoaDon/HoaDonDichVu";
+import OrderCartView from "../shoppingcart-GioHang/GioHang";
 
 const tabs = [
   { key: "account", label: "Quản lý tài khoản" },
   { key: "profile", label: "Thông tin tài khoản" },
   { key: "listbooking", label: "Lịch hẹn của tôi" },
   { key: "orders", label: "Giỏ hàng của tôi" },
+  { key: "myorders", label: "Đơn hàng của tôi" },
   { key: "address", label: "Số địa chỉ nhận hàng" },
-  { key: "favorite", label: "Danh sách yêu thích" },
+  // { key: "favorite", label: "Danh sách yêu thích" },
 ];
 
 const AccountCustomer: React.FC = () => {
@@ -24,7 +26,7 @@ const AccountCustomer: React.FC = () => {
   const { user } = useAuth(); // Lấy user từ context
   const [bookingTab, setBookingTab] = useState("appointment"); // Tabs phụ cho Booking
   
-  const [invoiceTab, setInvoiceTab] = useState("bookingdelay");
+  const [invoiceTab, setInvoiceTab] = useState("productcart");
   
   const setActiveTab = (tabKey: string) => {
     if (tabKey === "profile") {
@@ -87,6 +89,7 @@ const AccountCustomer: React.FC = () => {
             {/* Tabs phụ trong Booking */}
             <div className="flex space-x-6 border-b border-gray-200 mb-4">
               {[
+                { label: "Dịch vụ chờ đặt lịch hẹn", key: "bookingdelay" },
                 { label: "Lịch hẹn", key: "appointment" },
                 { label: "Lịch sử", key: "history" },
               ].map((tab) => (
@@ -103,6 +106,10 @@ const AccountCustomer: React.FC = () => {
                 </button>
               ))}
             </div>
+            
+            {invoiceTab === "bookingdelay" && (
+              <InvoiceList filterByStatus={["PENDING"]} currentUserId={user?.id} />
+            )}
 
             {bookingTab === "appointment" && (
               <AppointmentList filterByStatus={["PENDING", "SCHEDULED"]} />
@@ -119,10 +126,8 @@ const AccountCustomer: React.FC = () => {
         return (
           <div>
             <h2 className="text-xl font-semibold mb-2">Danh sách giỏ hàng</h2>
-            {/* Tabs phụ trong Hóa đơn dịch vụ */}
             <div className="flex space-x-6 border-b border-gray-200 mb-4">
               {[
-                { label: "Dịch vụ chờ đặt lịch hẹn", key: "bookingdelay" },
                 { label: "Giỏ hàng sản phẩm", key: "productcart" },
               ].map((tab) => (
                 <button
@@ -138,17 +143,13 @@ const AccountCustomer: React.FC = () => {
                 </button>
               ))}
             </div>
-
-            {invoiceTab === "bookingdelay" && (
-              <InvoiceList filterByStatus={["PENDING"]} currentUserId={user?.id} />
-            )}
-
             {invoiceTab === "productcart" && (
-              <InvoiceList filterByStatus={["PAID"]} currentUserId={user?.id} />
+              <OrderCartView />
             )}
           </div>
         );
-
+        case "myorders":
+          return <div>Đơn hàng của tôi</div>;
         case "address":
           return <div>Địa chỉ nhận hàng</div>;
         case "favorite":

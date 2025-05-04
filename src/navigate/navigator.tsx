@@ -28,7 +28,7 @@ const Content: React.FC = () => {
   const location = useLocation();
 
   // Các trang không hiển thị menu
-  const hiddenMenuPaths = ["/login", "/register", "/forgot-password", "/profile", "/profile/account", "/profile/listbooking", "/profile/orders", "/profile/address", "/profile/favorite", "/settings", "/booking", "/listbooking", "/payment-success"  ];
+  const hiddenMenuPaths = ["/login", "/register", "/forgot-password", "/profile", "/profile/account", "/profile/listbooking", "/profile/orders", "/profile/myorders", "/profile/address", "/profile/favorite", "/settings", "/booking", "/listbooking", "/payment-success"  ];
   const shouldShowMenu = !hiddenMenuPaths.includes(location.pathname);
 
   return (
