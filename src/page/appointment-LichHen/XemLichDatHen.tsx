@@ -115,10 +115,10 @@ const AppointmentList: React.FC<AppointmentListProps> = ({ filterByStatus }) => 
       return;
     }
   
-    if (appointment.status === "SCHEDULED") {
-      toast.warning("Lịch hẹn đã được xác nhận và không thể hủy.");
-      return;
-    }
+    // if (appointment.status === "SCHEDULED") {
+    //   toast.warning("Lịch hẹn đã được xác nhận và không thể hủy.");
+    //   return;
+    // }
   
     try {
       await updateStatusCancel(confirmCancelId);

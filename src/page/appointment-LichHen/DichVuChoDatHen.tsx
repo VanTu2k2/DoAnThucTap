@@ -130,26 +130,26 @@ const InvoiceList: React.FC<{ filterByStatus: string[], currentUserId: string }>
   // Xóa dịch vụ khỏi danh sách
   const handleRemoveDayInvoices = (invoices: Invoice[]) => {
     if (!invoices || invoices.length === 0) return;
-  
+
     try {
-      const stored = JSON.parse(localStorage.getItem("allInvoices") || "[]") as unknown;
+      const stored = JSON.parse(localStorage.getItem(`invoices_${currentUserId}`) || "[]") as unknown;
       const updated = (Array.isArray(stored) ? stored : []).filter((inv: unknown): inv is Invoice =>
         typeof inv === "object" &&
         inv !== null &&
         !invoices.some((i) => i.id === (inv as Invoice).id)
       );
-  
-      localStorage.setItem("allInvoices", JSON.stringify(updated));
-  
+
+      localStorage.setItem(`invoices_${currentUserId}`, JSON.stringify(updated));
+
       const grouped = groupByDate(updated.filter((inv) => filterByStatus.includes(inv.status)));
       setGroupedInvoices(grouped);
-  
+
       alert("Đã xóa khỏi danh sách chờ!");
     } catch (err) {
       console.error("Lỗi khi xóa hóa đơn:", err);
       alert("Xóa không thành công!");
     }
-  };  
+  };
 
   if (loading) {
     return (
@@ -172,17 +172,17 @@ const InvoiceList: React.FC<{ filterByStatus: string[], currentUserId: string }>
   // Hàm xóa chọn dịch vụ 
   const handleRemoveSingleInvoice = (idToRemove: string) => {
     try {
-      const stored = JSON.parse(localStorage.getItem("allInvoices") || "[]") as unknown;
+      const stored = JSON.parse(localStorage.getItem(`invoices_${currentUserId}`) || "[]") as unknown;
       const updated = (Array.isArray(stored) ? stored : []).filter((inv: unknown): inv is Invoice =>
         typeof inv === "object" &&
         inv !== null &&
         (inv as Invoice).id !== idToRemove
       );
-  
-      localStorage.setItem("allInvoices", JSON.stringify(updated));
+
+      localStorage.setItem(`invoices_${currentUserId}`, JSON.stringify(updated));
       const grouped = groupByDate(updated.filter((inv) => filterByStatus.includes(inv.status)));
       setGroupedInvoices(grouped);
-  
+
       alert("Đã xoá lịch hẹn!");
     } catch (err) {
       console.error("Lỗi khi xoá lịch hẹn:", err);

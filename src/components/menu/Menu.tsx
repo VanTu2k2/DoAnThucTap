@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { AccountCircleOutlined, LogoutOutlined, SettingsOutlined, Visibility, VisibilityOff, Person, Lock, LockOpen, Search, ShoppingCart, Home, AutoAwesome, Spa, Article, ContactMail, ChatBubbleOutlineOutlined, ArrowUpwardOutlined, KeyboardArrowDown, Close, ShoppingBag } from "@mui/icons-material";
 import { Avatar, Box} from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -16,6 +16,12 @@ import TinTuc from "../../page/news-TinTuc/TinTuc";
 import LienHe from "../../page/contact-LienHe/LienHe";
 
 import Chatbot from "../google/Chatbot";
+
+import { getOrderUser } from "../../service/apiProduct"; // Lấy dữ liệu giỏ hàng từ API
+
+// import ProductAdd from "../../page/product-SanPham/ProductAdd";
+// import OrderAdd from "../../page/order-DonHang/OrderAdd";
+// import OrderList from "../../page/order-DonHang/OrderList";
 
 const Menu: React.FC = () => {
     const location = useLocation(); // Lấy đường dẫn hiện tại
@@ -42,18 +48,6 @@ const Menu: React.FC = () => {
 
     const [activePage, setActivePage] = useState("home");
 
-    // const [hoveredMenu, setHoveredMenu] = useState(null);
-    // let timeoutId = null;
-
-    // const handleMouseEnter = (id) => {
-    //     clearTimeout(timeoutId); // Xóa timeout để submenu không bị ẩn ngay lập tức
-    //     setHoveredMenu(id);
-    // };
-
-    // const handleMouseLeave = () => {
-    //     timeoutId = setTimeout(() => setHoveredMenu(null), 300); // Delay 300ms trước khi ẩn submenu
-    // }; 
-
     const [hoveredMenu, setHoveredMenu] = useState<string | null>(null);
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -70,17 +64,7 @@ const Menu: React.FC = () => {
         }
         timeoutId = setTimeout(() => setHoveredMenu(null), 300); // Delay 300ms trước khi ẩn submenu
     };
-    
-    // Danh sách menu
-    // const menuItems = [
-    //     { id: "home", label: "Trang chủ", path: "/trangchu" },
-    //     { id: "about", label: "Giới thiệu", path: "/gioithieu" },
-    //     { id: "services", label: "Dịch vụ", path: "/dichvu",},
-    //     { id: "product", label: "Sản phẩm", path: "/sanpham" },
-    //     { id: "news", label: "Tin tức", path: "/tintuc" },
-    //     { id: "contact", label: "Liên hệ", path: "/lienhe" }
-    // ];
-    
+
     interface SubItem {
         id: string;
         label: string;
@@ -100,6 +84,10 @@ const Menu: React.FC = () => {
         { id: "about", label: "Giới thiệu", path: "/gioithieu" },
         { id: "services", label: "Dịch vụ", path: "/dichvu" },
         { id: "product", label: "Sản phẩm", path: "/sanpham" },
+        // { id: "productadd", label: "Sản phẩm add", path: "/sanphamadd" },
+        // { id: "orderadd", label: "add gh", path: "/addgh" },
+        // { id: "orderlist", label: "list gh", path: "/listgh" },
+
         { id: "news", label: "Tin tức", path: "/tintuc" },
         { id: "contact", label: "Liên hệ", path: "/lienhe" }
     ];
@@ -177,21 +165,12 @@ const Menu: React.FC = () => {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
-    // const handleLogout = async () => {
-    //     try {
-    //         await logout();
-    //         logoutContext();
-    //         setIsMenuOpen(false);
-    //     } catch (error: any) {
-    //         console.log("Error:", error.response?.data?.message || error.message);
-    //     }
-    // };
-
     const handleLogout = async () => {
         try {
             await logout();
             logoutContext();
             setIsMenuOpen(false);
+            setCartOrderCount(0);
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.log("Error:", error.message);
@@ -201,9 +180,41 @@ const Menu: React.FC = () => {
         }
     };
 
-    const searchRef = useRef(null);
     const [showShop, setShowShop] = useState(false);
-    
+    interface Order {
+        id: number;
+        status: string;
+    }
+
+    const [cartOrderCount, setCartOrderCount] = useState(0); // Số lượng đơn hàng trong giỏ
+
+    // Cập nhật số lượng giỏ hàng khi đăng nhập hoặc khi localStorage thay đổi
+    useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                // Kiểm tra nếu có user
+                const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+                const userId = currentUser?.id;
+                if (!userId) return;
+
+                // Lấy đơn hàng từ API
+                const ordersData: Order[] = await getOrderUser(userId); // Giả sử bạn có một API để lấy đơn hàng của user
+
+                // Tính số lượng đơn hàng chưa giao và cập nhật vào state
+                const orderCount = ordersData.filter((order: Order) => order.status !== "Đã giao").length;
+                setCartOrderCount(orderCount); // Cập nhật số lượng đơn hàng chưa giao vào state
+            } catch (err) {
+                console.error("Lỗi khi lấy dữ liệu giỏ hàng:", err);
+            }
+        };
+
+        if (user?.id) {
+            fetchOrders(); // Lấy dữ liệu đơn hàng khi có user
+        } else {
+            setCartOrderCount(0); // Nếu không có user, đặt số lượng giỏ hàng là 0
+        }
+    }, [user]); // Khi `user` thay đổi, sẽ chạy lại
+
     useEffect(() => {
         if (!user) {
             const storedUser = localStorage.getItem("user");
@@ -224,32 +235,6 @@ const Menu: React.FC = () => {
     const handleBlur = (field: "email" | "password") => {
         setFocused(prev => ({ ...prev, [field]: formData[field] !== "" }));
     };
-    
-
-    // const handleSubmit = async (e: React.FormEvent) => {
-    //     e.preventDefault();
-    //     setIsLoading(true); // Hiện trạng thái đang tải
-    //     try {
-    //         const response = await loginUser(formData);
-    //         login(response.data.user);
-    //         setMessage(""); // Xóa thông báo lỗi nếu đăng nhập thành công
-
-    //         // Reset form và trạng thái focus
-    //         setFormData({ email: "", password: "" });
-    //         setFocused({ email: false, password: false }); // Reset trạng thái focus
-    //         setIsLoginOpen(false); // Đóng form đăng nhập
-
-    //     } catch (error: any) {
-    //         const errorMessage = error.response?.data?.message || error.message;
-    //         if (errorMessage.includes("Invalid email or password")) {
-    //             setMessage("Email hoặc mật khẩu không đúng!");
-    //         } else {
-    //             setMessage(`Đăng nhập thất bại: ${errorMessage}`);
-    //         }
-    //     } finally {
-    //         setIsLoading(false); // Tắt trạng thái đang tải
-    //     }
-    // };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -260,6 +245,15 @@ const Menu: React.FC = () => {
             login(response.data.user);
             setMessage(""); // Xóa thông báo lỗi nếu đăng nhập thành công
     
+            // Gọi lại API để cập nhật số lượng đơn hàng trong giỏ sau khi đăng nhập
+            const user = response.data.user; // Lấy thông tin người dùng đã đăng nhập
+            const userId = user.id;
+            if (userId) {
+                const ordersData = await getOrderUser(userId); // Lấy dữ liệu đơn hàng từ API
+                const orderCount = ordersData.filter((order: Order) => order.status !== "Đã giao").length;
+                setCartOrderCount(orderCount); // Cập nhật số lượng đơn hàng chưa giao vào state
+            }
+
             // Reset form và trạng thái focus
             setFormData({ email: "", password: "" });
             setFocused({ email: false, password: false }); // Reset trạng thái focus
@@ -280,6 +274,19 @@ const Menu: React.FC = () => {
             setIsLoading(false); // Tắt trạng thái đang tải
         }
     };    
+
+    // Yêu cầu đăng nhập để được đặt lịch    
+    const handleCartClick = () => {
+        const user = localStorage.getItem("user");
+        if (!user) {
+            // alert("Vui lòng đăng nhập để xem giỏ hàng.");
+            // navigation("/login");
+            setIsLoginOpen(true); // Mở modal đăng nhập 
+            return;
+        }
+        navigation("/profile/myorders"); // Nếu đã đăng nhập, chuyển đến trang đơn hàng
+    };
+    if (isLoading) return <p>Đang tải giỏ hàng...</p>;
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -460,22 +467,31 @@ const Menu: React.FC = () => {
 
                         {/* Giỏ hàng */}
                         <div 
-                            className="relative p-2" 
-                            ref={searchRef}
-                            onMouseEnter={() => setShowShop(true)} // Hover vào icon mở khung tìm kiếm
-                            onMouseLeave={() => setShowShop(false)} // Rời chuột khỏi vùng tìm kiếm thì tắt
-                        >
-                            {/* Icon Search */}
-                            <ShoppingCart className="cursor-pointer hover:scale-110 transition-all duration-300" />
+                            className="relative p-2"
+                            onMouseEnter={() => setShowShop(true)}
+                            onMouseLeave={() => setShowShop(false)}
+                            >
+                            {/* Icon Giỏ hàng */}
+                            <ShoppingCart
+                                className="cursor-pointer hover:scale-110 transition-all duration-300"
+                                onClick={handleCartClick} // Khi click vào giỏ hàng, kiểm tra trạng thái đăng nhập
+                            />
 
-                            {/* Khung nhỏ chứa input và button tìm kiếm */}
+                            {/* Hiển thị số lượng đơn hàng trong giỏ */}
+                            {cartOrderCount > 0 && (
+                                <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                    {cartOrderCount}
+                                </div>
+                            )}
+
+                            {/* Khung giỏ hàng */}
                             {showShop && (
-                                <div className="absolute top-10 left-0 bg-white p-3 rounded-md shadow-lg flex items-center space-x-2 transition-all duration-300
-                                    min-w-[250px]    
-                                    before:content-[''] before:absolute before:-top-2 before:right-6 before:border-8 
-                                    before:border-transparent before:border-b-white">
-                                    
-                                    <text className="text-lg">Chưa có sản phẩm trong giỏ hàng.</text>
+                                <div className="absolute top-10 left-0 bg-white p-3 rounded-md shadow-lg flex items-center space-x-2 transition-all duration-300 min-w-[250px] before:content-[''] before:absolute before:-top-2 before:right-6 before:border-8 before:border-transparent before:border-b-white">
+                                    {cartOrderCount === 0 ? (
+                                        <span className="text-lg">Chưa có đơn hàng trong giỏ hàng.</span>
+                                    ) : (
+                                        <span className="text-lg">Có {cartOrderCount} đơn hàng trong giỏ hàng.</span>
+                                    )}
                                 </div>
                             )}
                         </div>
@@ -660,6 +676,9 @@ const Menu: React.FC = () => {
                         {activePage === "about" && <GioiThieu />}
                         {activePage === "services" && <DichVu />}
                         {activePage === "product" && <SanPham />}
+                        {/* {activePage === "productadd" && <ProductAdd />} */}
+                        {/* {activePage === "orderadd" && <OrderAdd />} */}
+                        {/* {activePage === "orderlist" && <OrderList />} */}
                         {activePage === "news" && <TinTuc />}
                         {activePage === "contact" && <LienHe />}
                     </div>

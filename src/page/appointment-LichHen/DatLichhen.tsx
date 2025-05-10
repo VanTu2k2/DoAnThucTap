@@ -66,7 +66,7 @@ const BookingPage = () => {
       
         const appointmentDateTime = `${appointmentDate}T${selectedTime}:00`;
       
-        // Tạo hóa đơn mới
+        // Tạo dịch vụ chờ mới
         const newInvoice = {
           id: Date.now(), // ID đơn giản, có thể đổi thành UUID nếu muốn
           userId,
@@ -77,26 +77,20 @@ const BookingPage = () => {
           totalPrice,
           status: "PENDING", // Trạng thái mặc định
         };
-      
-        // Lấy danh sách hóa đơn hiện có
-        // const stored = localStorage.getItem("allInvoices");
-        // const allInvoices = stored ? JSON.parse(stored) : [];
-      
-        // // Thêm hóa đơn mới
-        // const updatedInvoices = [...allInvoices, newInvoice];
-      
-        // // Lưu lại danh sách
-        // localStorage.setItem("allInvoices", JSON.stringify(updatedInvoices));
 
+        // Lấy danh sách dịch vụ hiện có
         const stored = localStorage.getItem(`invoices_${userId}`);
         const userInvoices = stored ? JSON.parse(stored) : [];
 
+        // Thêm dịch vụ chờ mới
         const updatedInvoices = [...userInvoices, newInvoice];
 
+        // Lưu lại danh sách
         localStorage.setItem(`invoices_${userId}`, JSON.stringify(updatedInvoices));
       
         // Chuyển hướng
-        navigate("/profile/orders");
+        // navigate("/profile/orders");
+        navigate("/profile/listbooking", { state: { initialTab: "bookingdelay" } });
     };    
     
     const handleToggleService = (id: number) => {

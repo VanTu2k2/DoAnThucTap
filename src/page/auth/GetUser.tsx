@@ -84,6 +84,12 @@ const GetUser: React.FC = () => {
               <strong className="font-medium">Address:</strong> {userInfo.address}
             </li>
             <li className="mb-2">
+              <strong className="font-medium">Gender:</strong> {userInfo.gender}
+            </li>
+            <li className="mb-2">
+              <strong className="font-medium">DateOfBirth:</strong> {userInfo.dateOfBirth}
+            </li>
+            <li className="mb-2">
               <strong className="font-medium">Created At:</strong> {new Date(userInfo.createdAt).toLocaleString()}
             </li>
             <li className="mb-2">

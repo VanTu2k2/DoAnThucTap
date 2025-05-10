@@ -1,47 +1,39 @@
-import { useEffect, useState } from "react";
-import { Button, Dialog, DialogContent, DialogTitle, Pagination, Container, Box, Typography, Divider, IconButton, Slider } from "@mui/material";
-import { getProducts, createOrder } from "../../service/apiProduct";
-import { ProductResponse, OrderRequest } from "../../interface/Product_interface";
-import { toast, ToastContainer } from "react-toastify";
-import { CircleDollarSign, X, ShoppingCart } from "lucide-react";
-import { Category } from "../../interface/ServiceSPA_interface";
-import { motion } from 'framer-motion';
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { deleteProduct, getProducts, updateProduct } from '../../service/apiProduct';
+import { ProductForm, ProductResponse } from '../../interface/Product_interface';
+import ProductDetailModal from '../../components/products/ProductDetailModal'; // Import modal
+import { Button, Dialog, DialogContent, DialogTitle, Pagination, Container, Box, Typography, Divider, IconButton, Slider } from '@mui/material';
+import { motion } from 'framer-motion'
+import { toast, ToastContainer } from 'react-toastify';
+import { getCategories } from '../../service/apiService';
+import { Category } from '../../interface/ServiceSPA_interface';
+import axios from 'axios';
+import { Package, CircleDollarSign, X, ShoppingCart } from 'lucide-react';
+import CartProductModal from '../../components/products/CartProductModal';
+// import { useNavigate } from "react-router-dom";
 
-const pageSize = 8;
 
-// import { useRef } from "react";
+// import { getProducts, createOrder } from "../../service/apiProduct";
+// import { ProductResponse, OrderRequest } from "../../interface/Product_interface";
 
-const SanPham = () => {
+const pageSize = 8
+
+const SanPham: React.FC = () => {
     const [products, setProducts] = useState<ProductResponse[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [open, setOpen] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [selectedProduct, setSelectedProduct] = useState<ProductResponse | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCartModalOpen, setIsCartModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
+    const [currentPage, setCurrentPage] = useState(1);
+
+    const [open, setOpen] = useState(false);
     const [statusFilter, setStatusFilter] = useState("");
     const [activeSort, setActiveSort] = useState('option:noibat');
-    const navigate = useNavigate();
-    const [categories, setCategories] = useState<Category[]>([]);
+    // const navigate = useNavigate();
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
-
-    // const [, setShowQuantityModal] = useState(false);
-    // const [quantityToAdd, setQuantityToAdd] = useState(1);
-
     const [, setQuantityToAdd] = useState(1);
 
-    // const [zoomPosition, setZoomPosition] = useState({ x: 50, y: 50 });
-    // const imageRef = useRef<HTMLDivElement>(null);
-    // const handleMouseMove = (e: React.MouseEvent) => {
-    //   const { left, top, width, height } = imageRef.current!.getBoundingClientRect();
-    //   const x = ((e.clientX - left) / width) * 100;
-    //   const y = ((e.clientY - top) / height) * 100;
-    //   setZoomPosition({ x, y });
-    // };
-    // const handleMouseLeave = () => {
-    //   setZoomPosition({ x: 50, y: 50 }); // Reset zoom
-    // };
-      
     // Fetch categories khi load trang
     useEffect(() => {
         axios.get("/api/categories")
@@ -112,18 +104,18 @@ const SanPham = () => {
     }, [sortType, selectedCategoryId ]); 
 
     // Yêu cầu đăng nhập để được đặt lịch    
-    const handleBookingClick = (product: unknown) => {
-        const user = localStorage.getItem("user");
+    // const handleBookingClick = (product: unknown) => {
+    //     const user = localStorage.getItem("user");
     
-        if (!user) {
-            alert("Vui lòng đăng nhập để đặt lịch.");
-            navigate("/login");
-            return;
-        }
-        const selectedProduct = product;
+    //     if (!user) {
+    //         alert("Vui lòng đăng nhập để đặt lịch.");
+    //         navigate("/login");
+    //         return;
+    //     }
+    //     const selectedProduct = product;
     
-        navigate("/booking", { state: { selectedProduct } });
-    };
+    //     navigate("/booking", { state: { selectedProduct } });
+    // };
 
     const [allProducts, setAllProducts] = useState<ProductResponse[]>([]);
 
@@ -136,10 +128,11 @@ const SanPham = () => {
 
     const [isFilteredByPrice, setIsFilteredByPrice] = useState(false);
 
+    // Lọc danh sách sản phẩm
     const filteredProducts = products.filter((product) =>
         product.nameProduct.toLowerCase().includes(searchTerm.toLowerCase())
     );
-        
+
     // Hàm xử lý khi click nút áp dụng khoảng giá
     const handleApplyPrice = () => {
         const [minPrice, maxPrice] = priceRange;
@@ -160,6 +153,7 @@ const SanPham = () => {
     
     useEffect(() => {
         fetchProducts();
+        fetchCategory();
     }, []);
 
     // Tải danh sách sản phẩm
@@ -168,16 +162,36 @@ const SanPham = () => {
             const response = await getProducts(); // Thay bằng API thực tế
             setProducts(response);         // Hiển thị ban đầu
             setAllProducts(response);      // Ghi vào bộ lọc gốc
+            
+            // const now = new Date();
+            // const sortedProducts = response.sort((a: ProductResponse, b: ProductResponse) => {
+            //     const dateA = new Date(a.createdAt);
+            //     const dateB = new Date(b.createdAt);
+            //     return dateB.getTime() - dateA.getTime();
+            // })
+            // setProducts(sortedProducts.map((product: ProductResponse) => ({
+            //     ...product,
+            //     isNew: (now.getTime() - new Date(product.createdAt).getTime()) / 1000 < 60,
+            // })));
+        } catch (error: unknown) {
+            console.error('Lỗi tải danh sách sản phẩm:', error);
+        }
+    };
+
+    const fetchCategory = async () => {
+        try {
+            const response = await getCategories();
+            setCategories(response);
         } catch (error) {
-            console.error("Lỗi tải danh sách sản phẩm:", error);
+            console.error('Error fetching category:', error);
         }
     };
 
     const filteredPro = products.filter((pro) => {
-        return pro.nameProduct.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            (statusFilter === "" || pro.productStatus === statusFilter);
-    });
-
+            return pro.nameProduct.toLowerCase().includes(searchTerm.toLowerCase()) &&
+                (statusFilter === "" || pro.productStatus === statusFilter);
+        });
+    
     // Render danh sách sản phẩm theo Page
     const paginatedProducts = filteredPro.slice(
         (currentPage - 1) * pageSize,
@@ -201,83 +215,64 @@ const SanPham = () => {
         setQuantityToAdd(1);      // Reset lại số lượng khi đóng dialog
     };
 
-    // Hàm thêm sản phẩm vào giỏ hàng   
-    // const handleAddToCart = async () => {
-    //     if (!selectedProduct) return;
-        
-    //     const currentUserString = localStorage.getItem("user");
-    //     const currentUser = currentUserString ? JSON.parse(currentUserString) : null;
-    
-    //     if (!currentUser || !currentUser.id) {
-    //         toast.error("Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
-    //         return;
-    //     }
-    
-    //     // Cung cấp giá trị mặc định cho shippingAddress nếu không có
-    //     const shippingAddress = currentUser?.address || "Địa chỉ giao hàng mặc định";  // Ví dụ địa chỉ mặc định
-    
-    //     const orderPayload: OrderRequest = {
-    //         userId: currentUser.id,
-    //         shippingAddress: shippingAddress,  // Sử dụng địa chỉ mặc định nếu không có
-    //         shippingPhone: currentUser.phone || null,
-    //         orderDate: new Date().toISOString(),
-    //         notes: null,
-    //         orderItems: [
-    //             {
-    //                 productId: selectedProduct.id,
-    //                 quantity: quantityToAdd
-    //             }
-    //         ]
-    //     };
-    
-    //     try {
-    //         await createOrder(orderPayload);
-    //         toast.success("Đã thêm vào giỏ hàng!");
-    //         setQuantityToAdd(1);
-    //         setOpen(false);
-    //     } catch {
-    //         toast.error("Thêm vào giỏ hàng thất bại!");
-    //     }
-    // };
+    const handleViewCart = (product: ProductResponse) => {
+        setSelectedProduct(products.find(p => p.id === product.id) || null);
+        setIsCartModalOpen(true);
+    };
 
+    const handleCloseModal = () => {
+        setSelectedProduct(null);
+        setIsModalOpen(false); // Đóng modal
+    };
 
-    const handleAddToCart = async () => {
-        if (!selectedProduct) return;
-    
-        const currentUserString = localStorage.getItem("user");
-        const currentUser = currentUserString ? JSON.parse(currentUserString) : null;
-    
-        if (!currentUser || !currentUser.id) {
-            toast.error("Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.");
-            return;
-        }
-    
-        // Cung cấp giá trị mặc định cho shippingAddress nếu không có
-        const shippingAddress = currentUser?.address || "Địa chỉ giao hàng mặc định";  // Ví dụ địa chỉ mặc định
-    
-        // Giỏ hàng chỉ cần thêm sản phẩm mà không cần quan tâm đến số lượng, số lượng sẽ được chọn sau.
-        const orderPayload: OrderRequest = {
-            userId: currentUser.id,
-            shippingAddress: shippingAddress,  // Sử dụng địa chỉ mặc định nếu không có
-            shippingPhone: currentUser.phone || null,
-            orderDate: new Date().toISOString(),
-            notes: null,
-            orderItems: [
-                {
-                    productId: selectedProduct.id,
-                    quantity: 1 // Mặc định thêm 1 sản phẩm vào giỏ hàng
-                }
-            ]
-        };
-    
+    const handleCloseCartModal = () => {
+        setSelectedProduct(null);
+        setIsCartModalOpen(false); // Đóng modal
+    };
+
+    // Xóa sản phẩm
+    const handleDeleteProduct = async (productId: number) => {
+        if (!window.confirm("Bạn có chắc chắn muốn xóa sản phẩm không?")) return;
+
         try {
-            await createOrder(orderPayload);
-            toast.success("Đã thêm vào giỏ hàng!");
-            setOpen(false);  // Đóng modal giỏ hàng hoặc xác nhận đã thêm vào giỏ
-        } catch {
-            toast.error("Thêm vào giỏ hàng thất bại!");
+            await deleteProduct(productId);
+            setProducts(products.filter((product) => product.id !== productId));
+            toast.success('Xóa sản phẩm thành công!');
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error) && error.response?.data?.code === 1006) {
+                toast.warn("Không thể xóa do sản phẩm này đã được bán!");
+                console.log(error.response?.data?.message);
+                
+              }
+              else {
+                toast.error("Có lỗi xảy ra khi gửi yêu cầu.");
+                console.error("Lỗi không xác định:", error);
+              }
+        }
+    }
+
+    // Cập nhật sản phẩm
+    const handleUpdateProduct = async (productId: number, formData: FormData) => {
+        try {
+            const productForm: ProductForm = {
+                nameProduct: formData.get('nameProduct') as string,
+                description: formData.get('description') as string,
+                price: Number(formData.get('price')),
+                categoryId: Number(formData.get('categoryId')),
+                quantity: Number(formData.get('quantity')),
+            };
+            const response = await updateProduct(productId, productForm);
+            // Cập nhật state products với dữ liệu mới từ response
+            setProducts(products.map(product =>
+                product.id === productId ? response : product
+            ));
+            toast.success('Cập nhật sản phẩm thành công!');
+        } catch (error) {
+            console.error('Lỗi khi cập nhật sản phẩm:', error);
+            toast.error('Cập nhật sản phẩm thất bại!');
         }
     };
+
 
     return (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="p-6">
@@ -551,9 +546,9 @@ const SanPham = () => {
                                                 </div>
                                             </div> */}
 
-                                            <Typography fontSize={14}>{product.category.id}</Typography>
+                                            {/* <Typography fontSize={14}>{product.category.id}</Typography> */}
 
-                                            <Typography fontSize={14}>Xếp ds sp mới nhất: {product.id}</Typography>
+                                            {/* <Typography fontSize={14}>Xếp ds sp mới nhất: {product.id}</Typography> */}
                                         </motion.div>
 
                                         {/* Dấu gạch ngăn cách */}
@@ -571,6 +566,24 @@ const SanPham = () => {
                                                 >
                                                     xem thêm
                                                 </span>
+                                            </div>
+
+                                            <div className="py-2 border-t border-gray-200 flex justify-between items-center">
+                                                <button
+                                                    onClick={() => handleViewCart(product)}
+                                                    title="Thêm vào giỏ hàng"
+                                                    className="flex items-center gap-1 bg-blue-100 hover:bg-blue-400 hover:text-white text-gray-700 font-medium py-1.5 px-4 rounded-md text-sm transition-colors"
+                                                >
+                                                    <Package className="w-4 h-4" />
+                                                    Thêm
+                                                </button>
+
+                                                <button
+                                                    // onClick={() => handleBuyNow(product)}
+                                                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium py-1.5 px-4 rounded-md text-sm transition-colors"
+                                                >
+                                                    Mua ngay
+                                                </button>
                                             </div>
                                             
                                             {/* <div className="mt-4 space-y-2">
@@ -625,24 +638,6 @@ const SanPham = () => {
                                 />
                             </div>
 
-                            {/* <div
-                                className="relative rounded-lg overflow-hidden shadow mb-6 group"
-                                ref={imageRef}
-                                onMouseMove={handleMouseMove}
-                                onMouseLeave={handleMouseLeave}
-                                >
-                                <img
-                                    src={selectedProduct.imageUrl || "https://media.hcdn.vn/catalog/category/1320x250-1.jpg"}
-                                    alt={selectedProduct.nameProduct}
-                                    className="w-full h-auto max-h-80 object-contain transition duration-300"
-                                    style={{
-                                    transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`,
-                                    transform: "scale(1.5)",
-                                    }}
-                                />
-                                <div className="absolute inset-0 bg-transparent group-hover:bg-white/10" />
-                            </div> */}
-
                             <p className="text-gray-700 mb-4 leading-relaxed">
                                 <strong className="text-gray-900">Mô tả:</strong> {selectedProduct.description}
                             </p>
@@ -651,47 +646,28 @@ const SanPham = () => {
 
                             <p className="text-gray-600">Còn: {selectedProduct.quantity}</p>
 
-                            {/* <div className="flex items-center mt-3">
-                                <button
-                                    className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-xl"
-                                    onClick={() => setQuantityToAdd(prev => Math.max(1, prev - 1))}
-                                >-</button>
-
-                                <span className="mx-4 text-lg">{quantityToAdd}</span>
-
-                                <button
-                                    className="w-8 h-8 rounded-full bg-gray-200 hover:bg-gray-300 text-xl"
-                                    onClick={() =>
-                                    setQuantityToAdd(prev => Math.min(selectedProduct.quantity, prev + 1))
-                                    }
-                                >+</button>
-                            </div> */}
-
                         </DialogContent>
-
-                        {/* Thêm sp vào giỏ hàng & Mua ngay */}
-                        <div className="flex justify-end px-6 pb-2 pt-2 border-t">
-                            <button
-                                className="bg-gradient-to-r from-gray-300 to-gray-400 hover:from-pink-400 hover:to-pink-300 text-white 
-                                            px-8 py-2 rounded-full text-lg font-medium shadow-md transition duration-300 mr-4"
-                                onClick={handleAddToCart}
-                            >
-                                <div className="flex items-center gap-2">
-                                    <ShoppingCart className="w-5 h-5" />
-                                    <span>Thêm vào giỏ hàng</span>
-                                </div>
-                            </button>
-
-                            <button className="bg-gradient-to-r from-orange-400 to-orange-600 hover:from-orange-500 hover:to-orange-700 text-white 
-                                                px-8 py-2 rounded-full text-lg font-medium shadow-md transition duration-300"
-                                    onClick={() => handleBookingClick(selectedProduct)}
-                                    >
-                                Mua ngay
-                            </button>
-                        </div>
                     </>
                 )}
             </Dialog>
+
+            {/* Gọi component Modal và truyền props */}
+            {isModalOpen && (
+                <ProductDetailModal
+                    product={selectedProduct}
+                    categories={categories}
+                    onClose={handleCloseModal}
+                    handleDeleteProduct={handleDeleteProduct}
+                    onUpdate={handleUpdateProduct}
+                />
+            )}
+
+            {isCartModalOpen && (
+                <CartProductModal
+                    product={selectedProduct}
+                    onClose={handleCloseCartModal}
+                />
+            )}            
         </motion.div>
     );
 };

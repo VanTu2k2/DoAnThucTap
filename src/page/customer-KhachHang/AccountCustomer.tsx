@@ -3,18 +3,31 @@ import { useAuth } from "../../hook/AuthContext"; // hook lấy user đăng nh�
 import ProfileDetail from "../auth/ProfileDetail";
 import AppointmentList from "../appointment-LichHen/XemLichDatHen";
 import { useLocation, useNavigate } from "react-router-dom";
-import InvoiceList from "../bill-HoaDon/HoaDonDichVu";
+import InvoiceList from "../appointment-LichHen/DichVuChoDatHen";
 import OrderCartView from "../shoppingcart-GioHang/GioHang";
+import OrderList from "../order-DonHang/OrderList";
+import OrderUpdatePage from "../order-DonHang/OrderUpdatePage";
 
 const tabs = [
-  { key: "account", label: "Quản lý tài khoản" },
-  { key: "profile", label: "Thông tin tài khoản" },
+  { key: "account", label: "Thông tin tài khoản" },
+  { key: "profile", label: "Quản lý tài khoản" },
   { key: "listbooking", label: "Lịch hẹn của tôi" },
   { key: "orders", label: "Giỏ hàng của tôi" },
   { key: "myorders", label: "Đơn hàng của tôi" },
   { key: "address", label: "Số địa chỉ nhận hàng" },
-  // { key: "favorite", label: "Danh sách yêu thích" },
 ];
+
+const genderMap: Record<string, string> = {
+  male: "Nam",
+  female: "Nữ",
+  other: "Không xác định",
+};
+
+const formatDate = (dateString: string | undefined): string => {
+  if (!dateString) return "Chưa cập nhật";
+  const [year, month, day] = dateString.split("-");
+  return `${day}-${month}-${year}`;
+};
 
 const AccountCustomer: React.FC = () => {
   const location = useLocation();
@@ -24,10 +37,16 @@ const AccountCustomer: React.FC = () => {
   const navigate = useNavigate();
 
   const { user } = useAuth(); // Lấy user từ context
-  const [bookingTab, setBookingTab] = useState("appointment"); // Tabs phụ cho Booking
-  
+  // const [bookingTab, setBookingTab] = useState("appointment"); // Tabs phụ cho Booking
+
+  const [bookingTab, setBookingTab] = useState(() => {      // Tabs phụ cho Booking
+    return location.state?.initialTab || "appointment";
+  });
+
   const [invoiceTab, setInvoiceTab] = useState("productcart");
   
+  const [orderProductTab, setorderProductTab] = useState("orderall");
+
   const setActiveTab = (tabKey: string) => {
     if (tabKey === "profile") {
       navigate(`/profile`); // Không có thêm /profile
@@ -63,16 +82,28 @@ const AccountCustomer: React.FC = () => {
             <table className="w-full border-separate border-spacing-y-4">
               <tbody>
                 <tr>
+                  <td className="font-medium pr-4 w-1/3">Họ tên:</td>
+                  <td>{user?.name || "Chưa cập nhật"}</td>
+                </tr>
+                <tr>
+                  <td className="font-medium pr-4 w-1/3">Email:</td>
+                  <td>{user?.email || "Chưa cập nhật"}</td>
+                </tr>
+                <tr>
                   <td className="font-medium pr-4 w-1/3">Số điện thoại:</td>
                   <td>{user?.phone || "Chưa cập nhật"}</td>
                 </tr>
                 <tr>
-                  <td className="font-medium pr-4">Địa chỉ:</td>
-                  <td>{user?.address || "Chưa cập nhật"}</td>
+                  <td className="font-medium pr-4 w-1/3">Giới tính:</td>
+                  <td>{genderMap[user?.gender || "other"]}</td>
                 </tr>
                 <tr>
-                  <td className="font-medium pr-4">Mô tả:</td>
-                  <td>{user?.description || "Chưa cập nhật"}</td>
+                  <td className="font-medium pr-4 w-1/3">Ngày sinh:</td>
+                  <td>{formatDate(user?.dateOfBirth)}</td>
+                </tr>
+                <tr>
+                  <td className="font-medium pr-4">Địa chỉ:</td>
+                  <td>{user?.address || "Chưa cập nhật"}</td>
                 </tr>
               </tbody>
             </table>
@@ -80,7 +111,12 @@ const AccountCustomer: React.FC = () => {
         );
   
       case "profile":
-        return <ProfileDetail />;
+        return (
+          <div>
+            <h2 className="text-xl font-semibold mb-2">Quản lý tài khoản</h2>
+            <ProfileDetail />
+          </div>
+        );
       
       case "listbooking":        
         return (
@@ -107,7 +143,7 @@ const AccountCustomer: React.FC = () => {
               ))}
             </div>
             
-            {invoiceTab === "bookingdelay" && (
+            {bookingTab === "bookingdelay" && (
               <InvoiceList filterByStatus={["PENDING"]} currentUserId={user?.id} />
             )}
 
@@ -123,37 +159,81 @@ const AccountCustomer: React.FC = () => {
         );
 
         case "orders":        
-        return (
-          <div>
-            <h2 className="text-xl font-semibold mb-2">Danh sách giỏ hàng</h2>
-            <div className="flex space-x-6 border-b border-gray-200 mb-4">
-              {[
-                { label: "Giỏ hàng sản phẩm", key: "productcart" },
-              ].map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setInvoiceTab(tab.key)}
-                  className={`pb-1 text-sm font-medium transition-colors ${
-                    invoiceTab === tab.key
-                      ? "text-orange-600 border-b-2 border-orange-600"
-                      : "text-gray-600 border-b-2 border-transparent hover:text-orange-500"
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+          return (
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Danh sách giỏ hàng</h2>
+              <div className="flex space-x-6 border-b border-gray-200 mb-4">
+                {[
+                  // { label: "Dịch vụ chờ đặt lịch hẹn", key: "bookingdelay" },
+                  { label: "Giỏ hàng sản phẩm", key: "productcart" },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setInvoiceTab(tab.key)}
+                    className={`pb-1 text-sm font-medium transition-colors ${
+                      invoiceTab === tab.key
+                        ? "text-orange-600 border-b-2 border-orange-600"
+                        : "text-gray-600 border-b-2 border-transparent hover:text-orange-500"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+              {/* {invoiceTab === "bookingdelay" && (
+                <InvoiceList filterByStatus={["PENDING"]} currentUserId={user?.id} />
+              )} */}
+              {invoiceTab === "productcart" && (
+                <OrderCartView />
+              )}
             </div>
-            {invoiceTab === "productcart" && (
-              <OrderCartView />
-            )}
-          </div>
-        );
+          );
         case "myorders":
-          return <div>Đơn hàng của tôi</div>;
+          return (
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Danh sách đơn hàng</h2>
+              <div className="flex space-x-6 border-b border-gray-200 mb-4">
+                {[
+                  { label: "Tất cả", key: "orderall" },
+                  { label: "Mới đặt", key: "orderpending", status: ["PENDING"] },
+                  { label: "Đang xử lý", key: "orderprocessing", status: ["PROCESSING"] },
+                  { label: "Đang vận chuyển", key: "ordershipping", status: ["SHIPPED"] },
+                  { label: "Thành công", key: "orderdelivered", status: ["DELIVERED"] },
+                  { label: "Đã hủy", key: "ordercanceled", status: ["CANCELLED"] },
+                  { label: "Đã thanh toán", key: "orderpaid", status: ["PAID"] },
+                  { label: "Đã hoàn tiền", key: "orderrefund", status: ["REFUND"] },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setorderProductTab(tab.key)}
+                    className={`pb-1 text-sm font-medium transition-colors ${
+                      orderProductTab === tab.key
+                        ? "text-orange-600 border-b-2 border-orange-600"
+                        : "text-gray-600 border-b-2 border-transparent hover:text-orange-500"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {orderProductTab === "orderall" && <OrderList />}
+              {orderProductTab === "orderpending" && <OrderList filterByStatus={["PENDING"]} />}
+              {orderProductTab === "orderprocessing" && <OrderList filterByStatus={["PROCESSING"]} />}
+              {orderProductTab === "ordershipping" && <OrderList filterByStatus={["SHIPPED"]} />}
+              {orderProductTab === "orderdelivered" && <OrderList filterByStatus={["DELIVERED"]} />}
+              {orderProductTab === "ordercanceled" && <OrderList filterByStatus={["CANCELLED"]} />}
+              {orderProductTab === "orderpaid" && <OrderList filterByStatus={["PAID"]} />}
+              {orderProductTab === "orderrefund" && <OrderList filterByStatus={["REFUND"]} />}
+            </div>
+          );            
         case "address":
-          return <div>Địa chỉ nhận hàng</div>;
-        case "favorite":
-          return <div>Danh sách yêu thích</div>;
+          return (
+            <div>
+              <h2 className="text-xl font-semibold mb-2">Địa chỉ nhận hàng</h2>
+              <OrderUpdatePage />
+            </div>
+          );
       default:
         return <div>Chọn mục ở bên trái để xem thông tin.</div>;
     }
@@ -175,7 +255,7 @@ const AccountCustomer: React.FC = () => {
                 {user?.name ? `Chào ${user.name}` : "Tài khoản"}
               </div>
               <div
-                className="text-sm text-gray-500 cursor-pointer hover:underline hover:text-blue-700"
+                className="text-sm mt-1 text-gray-500 cursor-pointer hover:underline hover:text-blue-700"
                 onClick={() => setActiveTab("profile")}
               >
                 Chỉnh sửa tài khoản
