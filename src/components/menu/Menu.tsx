@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { AccountCircleOutlined, LogoutOutlined, SettingsOutlined, Visibility, VisibilityOff, Person, Lock, LockOpen, Search, ShoppingCart, Home, AutoAwesome, Spa, Article, ContactMail, ChatBubbleOutlineOutlined, ArrowUpwardOutlined, KeyboardArrowDown, Close, ShoppingBag } from "@mui/icons-material";
+import { AccountCircleOutlined, LogoutOutlined, SettingsOutlined, Visibility, VisibilityOff, Person, Lock, LockOpen, Search, ShoppingCart, Home, AutoAwesome, Spa, Article, ContactMail, ChatBubbleOutlineOutlined, ArrowUpwardOutlined, KeyboardArrowDown, Close, ShoppingBag, LocalShipping  } from "@mui/icons-material";
 import { Avatar, Box} from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hook/AuthContext";
@@ -473,6 +473,11 @@ const Menu: React.FC = () => {
                             >
                             {/* Icon Giỏ hàng */}
                             <ShoppingCart
+                                className="cursor-pointer hover:scale-110 transition-all duration-300"
+                                onClick={handleCartClick} // Khi click vào giỏ hàng, kiểm tra trạng thái đăng nhập
+                            />
+
+                            <LocalShipping
                                 className="cursor-pointer hover:scale-110 transition-all duration-300"
                                 onClick={handleCartClick} // Khi click vào giỏ hàng, kiểm tra trạng thái đăng nhập
                             />

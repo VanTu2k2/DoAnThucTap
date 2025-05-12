@@ -17,6 +17,7 @@ const CartProductModal: React.FC<CartProductModalProps> = ({ product, onClose })
         quantity: number;
         userId: string;
         userName: string;
+        addedDate: string; // Thêm field ngày thêm vào
     };
     
     const handleOrder = () => {
@@ -28,12 +29,12 @@ const CartProductModal: React.FC<CartProductModalProps> = ({ product, onClose })
             return;
         }
     
-        const orderItem: OrderItem = {
-            ...product,
-            quantity,
-            userId: user.id,
-            userName: user.name,
-        };
+        // const orderItem: OrderItem = {
+        //     ...product,
+        //     quantity,
+        //     userId: user.id,
+        //     userName: user.name,
+        // };
     
         const existingOrders: OrderItem[] = JSON.parse(localStorage.getItem('orderItems') || '[]');
     
@@ -41,12 +42,27 @@ const CartProductModal: React.FC<CartProductModalProps> = ({ product, onClose })
             (item) => item.id === product.id && item.userId === user.id
         );
     
+        // if (existingIndex !== -1) {
+        //     existingOrders[existingIndex].quantity += quantity;
+        // } else {
+        //     existingOrders.push(orderItem);
+        // }
+
         if (existingIndex !== -1) {
+            // Nếu sản phẩm đã có, tăng số lượng
             existingOrders[existingIndex].quantity += quantity;
         } else {
+            // Nếu là sản phẩm mới, thêm ngày thêm
+            const orderItem: OrderItem = {
+                ...product,
+                quantity,
+                userId: user.id,
+                userName: user.name,
+                addedDate: new Date().toISOString(), // Lưu ISO format để dễ xử lý
+            };
             existingOrders.push(orderItem);
         }
-    
+
         localStorage.setItem('orderItems', JSON.stringify(existingOrders));
         alert('Sản phẩm đã được thêm vào giỏ hàng!');
         onClose();

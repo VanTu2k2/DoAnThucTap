@@ -54,6 +54,13 @@ const SanPham: React.FC = () => {
         }
     }, [selectedCategoryId]);
 
+    // Cách 2
+    // const handleCategory = (e: number) => {
+    //     console.log("e", e);
+    //     const filtered = [...allProducts].filter((product) => product.category.id === e);
+    //     setProducts(filtered);
+    // };
+
     const sortOptions = [
         { value: 'noibat', label: 'Nổi bật' },
         { value: 'moinhat', label: 'Mới nhất' },
@@ -341,6 +348,7 @@ const SanPham: React.FC = () => {
                                     key={category.categoryId}
                                     fontSize={18}
                                     onClick={() => setSelectedCategoryId(category.categoryId)}
+                                    // onClick={() => handleCategory(category.categoryId)}
                                     sx={{
                                     cursor: "pointer",
                                     color: selectedCategoryId === category.categoryId ? "primary.main" : "text.primary",

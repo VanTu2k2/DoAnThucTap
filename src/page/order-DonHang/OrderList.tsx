@@ -8,7 +8,6 @@ import PaymentOrderModal from "../Payment/PaymentOrderModal";
 import dayjs from "dayjs";
 import "dayjs/locale/vi"; // Đảm bảo dùng tiếng Việt
 dayjs.locale("vi");
-// import { Search } from "lucide-react";
 
 const pageSize = 8;
 
@@ -19,11 +18,25 @@ interface OrderListProps {
 const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
     const [orders, setOrders] = useState<OrderResponse[]>([]); // Danh sách đơn hàng
     const [currentPage, setCurrentPage] = useState(1);
-    // const [searchTerm, setSearchTerm] = useState("");
-    // const [statusFilter, setStatusFilter] = useState(""); // Trạng thái lọc
     const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(null); // Đơn hàng được chọn
     const [isModalOpen, setIsModalOpen] = useState(false); // Trạng thái mở modal
     
+    const [editingShippingPhoneId, setEditingShippingPhoneId] = useState<number | null>(null);
+    const [editShippingPhone, setEditShippingPhone] = useState("");
+
+    const [editingShippingAddressId, setEditingShippingAddressId] = useState<number | null>(null);
+    const [editShippingAddress, setEditShippingAddress] = useState("");
+
+    const [editingShippingNoteId, setEditingShippingNoteId] = useState<number | null>(null);
+    const [editShippingNote, setEditShippingNote] = useState("");
+
+    const [phoneError, setPhoneError] = useState('');
+
+    const validatePhoneNumber = (phone: string) => {
+        const phoneRegex = /^0\d{9}$/;
+        return phoneRegex.test(phone);
+    };
+
     useEffect(() => {
         fetchOrders();
     }, []);
@@ -77,24 +90,7 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
             default:
                 return status;
         }
-    };    
-
-    // Áp dụng lọc theo search + trạng thái đơn (statusFilter dropdown) + filterByStatus prop
-    // const filteredOrders = orders.filter((order) => {
-    //     const search = searchTerm.trim().toLowerCase();
-
-    //     const matchSearch =
-    //         order.guestName?.toLowerCase().includes(search) ||
-    //         order.user?.name.toLowerCase().includes(search) ||
-    //         order.id.toString().includes(search);
-
-    //     const matchStatusFilter = !statusFilter || order.status === statusFilter;
-
-    //     const matchFilterByStatus =
-    //         filterByStatus.length === 0 || filterByStatus.includes(order.status);
-
-    //     return matchSearch && matchStatusFilter && matchFilterByStatus;
-    // });
+    };
 
     const filteredOrders = orders.filter((order) => {
         return filterByStatus.length === 0 || filterByStatus.includes(order.status);
@@ -118,7 +114,192 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
         setSelectedOrder(null); // Xóa thông tin đơn hàng được chọn
         setIsModalOpen(false); // Đóng modal
     };
-    
+
+    // const handleSaveShippingPhone = async (orderId: number) => {
+    //     console.log("👉 Bắt đầu cập nhật shippingPhone cho orderId:", orderId);
+
+    //     const orderToUpdate = orders.find(order => order.id === orderId);
+    //     if (!orderToUpdate) {
+    //         console.warn("⚠️ Không tìm thấy đơn hàng với id:", orderId);
+    //         return;
+    //     }
+
+    //     console.log("✅ Đã tìm thấy order:", orderToUpdate);
+
+    //     const updatedData = {
+    //         userId: orderToUpdate.user?.id,
+    //         guestName: orderToUpdate.guestName || "",
+    //         shippingPhone: editShippingPhone,
+    //         shippingAddress: orderToUpdate.shippingAddress || "",
+    //         notes: orderToUpdate.notes || "",
+    //         orderDate: orderToUpdate.orderDate || new Date().toISOString(),
+    //         orderItems: orderToUpdate.orderItems.map(item => ({
+    //         productId: item.product.id,
+    //         quantity: item.quantity,
+    //         })),
+    //     };
+
+    //     console.log("📦 Dữ liệu chuẩn bị gửi đi:", updatedData);
+
+    //     try {
+    //         const res = await fetch(`/api/orders/${orderId}`, {
+    //         method: "PUT",
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //         },
+    //         body: JSON.stringify(updatedData),
+    //         });
+
+    //         if (!res.ok) {
+    //             const errorData = await res.json();
+    //             console.error("❌ Lỗi từ server:", errorData);
+    //             throw new Error(errorData.message || "Không thể cập nhật đơn hàng");
+    //         }
+
+    //         const data = await res.json();
+    //         console.log("✅ Cập nhật thành công:", data);
+
+    //         await fetchOrders();
+    //         console.log("🔄 Làm mới danh sách đơn hàng xong.");
+    //     } catch (error: unknown) {
+    //         if (error instanceof Error) {
+    //         console.error("❌ Lỗi khi cập nhật số điện thoại:", error.message);
+    //         } else {
+    //         console.error("❌ Lỗi không xác định khi cập nhật số điện thoại:", error);
+    //         }
+    //     }
+    // };
+
+    // Hàm cập nhật sdt
+    const handleSaveShippingPhone = async (orderId: number) => {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) {
+            console.warn("⚠️ Không tìm thấy đơn hàng với id:", orderId);
+            return;
+        }
+
+        // Kiểm tra số điện thoại hợp lệ
+        if (!validatePhoneNumber(editShippingPhone)) {
+            setPhoneError("Số điện thoại phải đủ 10 số và bắt đầu bằng số 0");
+            return;
+        }
+
+        // Nếu số điện thoại hợp lệ, reset lỗi (nếu có)
+        setPhoneError('');
+
+        const updatedData = {
+            userId: order.user?.id,
+            guestName: order.guestName ?? "",
+            shippingPhone: editShippingPhone,
+            shippingAddress: order.shippingAddress ?? "",
+            notes: order.notes ?? "",
+            orderDate: order.orderDate ?? new Date().toISOString(),
+            orderItems: order.orderItems.map(({ product, quantity }) => ({
+                productId: product.id,
+                quantity,
+            })),
+        };
+
+        try {
+            const res = await fetch(`/api/orders/${orderId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || "Không thể cập nhật đơn hàng");
+            }
+
+            await fetchOrders();
+            console.log("✅ Cập nhật số điện thoại thành công cho orderId:", orderId);
+            return true;
+        } catch (error) {
+            console.error("❌ Lỗi khi cập nhật số điện thoại:", error instanceof Error ? error.message : error);
+        }
+    };
+
+    // Hàm cập nhật địa chỉ
+    const handleSaveShippingAddress = async (orderId: number) => {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) {
+            console.warn("⚠️ Không tìm thấy đơn hàng với id:", orderId);
+            return;
+        }
+
+        const updatedData = {
+            userId: order.user?.id,
+            guestName: order.guestName ?? "",
+            shippingPhone: order.shippingPhone ?? "",
+            shippingAddress: editShippingAddress, // 👈 cập nhật địa chỉ mới
+            notes: order.notes ?? "",
+            orderDate: order.orderDate ?? new Date().toISOString(),
+            orderItems: order.orderItems.map(({ product, quantity }) => ({
+                productId: product.id,
+                quantity,
+            })),
+        };
+
+        try {
+            const res = await fetch(`/api/orders/${orderId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || "Không thể cập nhật địa chỉ");
+            }
+
+            await fetchOrders();
+            console.log("✅ Cập nhật địa chỉ giao hàng thành công cho orderId:", orderId);
+        } catch (error) {
+            console.error("❌ Lỗi khi cập nhật địa chỉ:", error instanceof Error ? error.message : error);
+        }
+    };
+
+    // Hàm cập nhật ghi chú
+    const handleSaveShippingNote = async (orderId: number) => {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) {
+            console.warn("⚠️ Không tìm thấy đơn hàng với id:", orderId);
+            return;
+        }
+
+        const updatedData = {
+            userId: order.user?.id,
+            guestName: order.guestName ?? "",
+            shippingPhone: order.shippingPhone ?? "",
+            shippingAddress: order.shippingAddress ?? "",
+            notes: editShippingNote,
+            orderDate: order.orderDate ?? new Date().toISOString(),
+            orderItems: order.orderItems.map(({ product, quantity }) => ({
+                productId: product.id,
+                quantity,
+            })),
+        };
+
+        try {
+            const res = await fetch(`/api/orders/${orderId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedData),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || "Không thể cập nhật ghi chú");
+            }
+
+            await fetchOrders();
+            console.log("✅ Cập nhật ghi chú thành công cho orderId:", orderId);
+        } catch (error) {
+            console.error("❌ Lỗi khi cập nhật ghi chú:", error instanceof Error ? error.message : error);
+        }
+    };
+
     return (
         <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -126,36 +307,6 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
             transition={{ duration: 0.3 }}
             className="p-6 bg-white rounded-lg shadow-md"
         >
-            {/* <h2 className="text-2xl font-semibold">Danh sách đơn hàng</h2> */}
-            {/* <div className="flex justify-between mb-4">
-                <div className="relative flex items-center w-full md:justify-center">
-                    <input
-                        type="text"
-                        className="md:w-[50%] w-full p-4 pr-12 border border-gray-400 rounded-lg focus:outline-none focus:border-blue-500"
-                        placeholder="Tìm kiếm theo tên, id đơn hàng"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <div className="absolute right-[calc(25%+1rem)] md:right-[calc(25%+1rem)] top-1/2 transform -translate-y-1/2 text-gray-500">
-                        <Search className="w-5 h-5" />
-                    </div>
-                </div>
-                <select
-                    className="border p-2 rounded-lg ml-2 shadow-lg"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="PENDING">Mới đặt</option>
-                    <option value="PROCESSING">Đang xử lý</option>
-                    <option value="SHIPPED">Đang vận chuyển</option>
-                    <option value="DELIVERED">Thành công</option>
-                    <option value="CANCELLED">Đã hủy</option>
-                    <option value="PAID">Đã thanh toán</option>
-                    <option value="REFUND">Đã hoàn tiền</option>
-                </select>
-            </div> */}
-
             {filteredOrders.length > 0 ? (
                 <div className="grid gap-6">
                     {currentOrders.map((order) => (                      
@@ -165,7 +316,7 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
                                 Mới ✨
                                 </span>
                             )}
-                            <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                            <div className="flex mt-4 flex-col md:flex-row md:justify-between gap-4">
                                 {/* Thông tin đơn hàng */}
                                 <div className="flex-1">
                                     <p className="font-semibold text-gray-800 mb-2">
@@ -178,24 +329,148 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
                                                 {order.user ? order.user.name : order.guestName || "Ẩn danh"}
                                             </span>
                                         </p>
-                                        <p>
-                                            SĐT:{" "}
-                                            <span className="text-gray-700">
-                                                {order.user?.phone || order.shippingPhone || "Không có số điện thoại"}
-                                            </span>
-                                        </p>
-                                        <p>
-                                            Địa chỉ:{" "}
-                                            <span className="text-gray-700">
-                                                {order.user?.address || order.shippingAddress || "Không có địa chỉ"}
-                                            </span>
-                                        </p>
+
+                                        <div className="space-y-1 text-sm">
+                                            <p>
+                                                SĐT người dùng:{" "}
+                                                <span className="text-gray-700">
+                                                {order.user?.phone || "Chưa cập nhật"}
+                                                </span>
+                                            </p>
+                                            <p className="flex items-center justify-between">
+                                                <span>
+                                                    SĐT giao hàng:{" "}
+                                                {editingShippingPhoneId === order.id ? (
+                                                    <input
+                                                        value={editShippingPhone}
+                                                        onChange={(e) => setEditShippingPhone(e.target.value)}
+                                                        className="border px-2 py-1 ml-5 w-40"
+                                                        placeholder="Nhập số điện thoại"
+                                                    />
+                                                    ) : (
+                                                    <span className="text-gray-700 ml-1">
+                                                        {order.shippingPhone || "Không có số điện thoại"}
+                                                    </span>
+                                                )}
+                                                </span>
+                                                {editingShippingPhoneId === order.id ? (
+                                                    <button
+                                                        onClick={async () => {
+                                                            const success = await handleSaveShippingPhone(order.id);
+                                                            if (success) {
+                                                                setEditingShippingPhoneId(null);
+                                                            }
+                                                        }}
+                                                        className="text-green-600 ml-2 text-sm"
+                                                    >
+                                                        Lưu
+                                                    </button>
+                                                    ) : (
+                                                    <button
+                                                        onClick={() => {
+                                                        setEditingShippingPhoneId(order.id);
+                                                        setEditShippingPhone(order.shippingPhone || "");
+                                                        }}
+                                                        className="text-blue-600 ml-2 text-xs"
+                                                    >
+                                                        Cập nhật
+                                                    </button>
+                                                )}
+                                            </p>
+                                            {phoneError && <div style={{ color: 'red' }}>{phoneError}</div>}
+                                        </div>
+
+                                        <div className="space-y-1 text-sm mt-2">
+                                            <p>
+                                                Địa chỉ:{" "}
+                                                <span className="text-gray-700">
+                                                {order.user?.address || "Chưa cập nhật"}
+                                                </span>
+                                            </p>
+                                            <p className="flex items-center justify-between">
+                                                <span>
+                                                Địa chỉ giao hàng:{" "}
+                                                {editingShippingAddressId === order.id ? (
+                                                    <input
+                                                    value={editShippingAddress}
+                                                    onChange={(e) => setEditShippingAddress(e.target.value)}
+                                                    className="border px-2 py-1 ml-1 w-40"
+                                                    placeholder="Nhập địa chỉ"
+                                                    />
+                                                ) : (
+                                                    <span className="text-gray-700 ml-1">
+                                                    {order.shippingAddress || "Không có địa chỉ"}
+                                                    </span>
+                                                )}
+                                                </span>
+                                                {editingShippingAddressId === order.id ? (
+                                                <button
+                                                    onClick={() => {
+                                                    handleSaveShippingAddress(order.id);
+                                                    setEditingShippingAddressId(null);
+                                                    }}
+                                                    className="text-green-600 ml-2 text-sm"
+                                                >
+                                                    Lưu
+                                                </button>
+                                                ) : (
+                                                <button
+                                                    onClick={() => {
+                                                    setEditingShippingAddressId(order.id);
+                                                    setEditShippingAddress(order.shippingAddress || "");
+                                                    }}
+                                                    className="text-blue-600 ml-2 text-xs"
+                                                >
+                                                    Cập nhật
+                                                </button>
+                                                )}
+                                            </p>
+                                        </div>
+                                        
                                         <p>
                                             Ngày đặt: {dayjs(order.orderDate).format("dddd, DD/MM/YYYY [lúc] HH:mm").replace(/^\w/, c => c.toUpperCase())}
                                         </p>
-                                        <p>
-                                            Ghi chú: {order.notes || "Không có ghi chú"}
+                                        
+                                        <p className="flex items-center justify-between">
+                                            <span>
+                                                Ghi chú:{" "}
+                                                {editingShippingNoteId === order.id ? (
+                                                    <input
+                                                    value={editShippingNote}
+                                                    onChange={(e) => setEditShippingNote(e.target.value)}
+                                                    className="border px-2 py-1 ml-1 w-40"
+                                                    placeholder="Ghi chú thêm..."
+                                                    />
+                                                ) : (
+                                                    <span className="text-gray-700 ml-1">
+                                                    {order.notes || "Không có ghi chú"}
+                                                    </span>
+                                                )}
+                                            </span>
+
+                                            {editingShippingNoteId === order.id ? (
+                                                <button
+                                                    onClick={() => {
+                                                    handleSaveShippingNote(order.id);
+                                                    setEditingShippingNoteId(null);
+                                                    }}
+                                                    className="text-green-600 ml-2 text-sm"
+                                                >
+                                                    Lưu
+                                                </button>
+                                                ) : (
+                                                <button
+                                                    onClick={() => {
+                                                    setEditingShippingNoteId(order.id);
+                                                    setEditShippingNote(order.notes || "");
+                                                    }}
+                                                    className="text-blue-600 ml-2 text-xs"
+                                                >
+                                                    Cập nhật
+                                                </button>
+                                            )}
                                         </p>
+
                                         <p>
                                             Trạng thái:{" "}
                                             <span className="px-2 py-1 text-xs rounded-full bg-yellow-100 text-yellow-700">
@@ -206,7 +481,7 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
                                 </div>
 
                                 {/* Sản phẩm */}
-                                <div className="flex-[1.2] bg-white rounded-xl p-4 border border-gray-100 max-h-[220px] overflow-auto">
+                                <div className="flex-1 bg-white rounded-xl p-4 border border-gray-100 max-h-[220px] overflow-auto">
                                     <p className="font-semibold text-gray-800 mb-1">
                                         Thông tin sản phẩm
                                     </p>
