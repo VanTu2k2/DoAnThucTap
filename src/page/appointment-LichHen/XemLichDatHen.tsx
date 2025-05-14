@@ -30,6 +30,7 @@ const statusLabel: Record<AppointmentStatus, string> = {
   PAID: "Đã thanh toán",
 };
 
+
 type AppointmentStatus = "PENDING" | "SCHEDULED" | "CANCELLED" | "COMPLETED" | "PAID";
 
 interface AppointmentListProps {
@@ -43,6 +44,13 @@ const AppointmentList: React.FC<AppointmentListProps> = ({ filterByStatus }) => 
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<AppointmentResponse | null>(null);
+
+  // Nhận diện tab dựa trên status
+  const isHistoryTab = filterByStatus
+    ? filterByStatus.every((status) =>
+        ["COMPLETED", "PAID", "CANCELLED"].includes(status)
+      )
+  : false;
 
   const fetchAppointments = async () => {
     try {
@@ -152,7 +160,18 @@ const AppointmentList: React.FC<AppointmentListProps> = ({ filterByStatus }) => 
 
   return (
     <div className="px-4 py-4">
-      {Object.keys(groupedAppointments).map((date) => (
+      {Object.keys(groupedAppointments).length === 0 ? (
+          <div className="w-full bg-white rounded-2xl shadow-lg border border-gray-200 text-center text-gray-500 text-lg font-medium flex items-center justify-center gap-2 min-h-[370px]">
+            <div className="text-3xl">🗓️</div>
+            <p className="text-lg font-medium">
+              {isHistoryTab
+                ? "Không có lịch sử cuộc hẹn nào"
+                : "Bạn chưa có lịch hẹn sắp tới"}
+            </p>
+          </div>
+        ) : (
+      Object.keys(groupedAppointments).map((date) => (
+      // {Object.keys(groupedAppointments).map((date) => (
         <Card key={date} className="space-y-4 mb-6">
           <CardContent className="space-y-4 border-t-2">
           {/* <h3 className="text-lg font-semibold text-gray-800">
@@ -297,7 +316,9 @@ const AppointmentList: React.FC<AppointmentListProps> = ({ filterByStatus }) => 
           ))}
           </CardContent>
         </Card>
-      ))}
+      // ))}
+        ))
+      )}
 
       {/* Modal thanh toán */}
       <PaymentModal

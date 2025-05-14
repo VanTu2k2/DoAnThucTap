@@ -161,7 +161,7 @@ const InvoiceList: React.FC<{ filterByStatus: string[], currentUserId: string }>
 
   const dateKeys = Object.keys(groupedInvoices);
   if (dateKeys.length === 0) {
-    return <div className="text-center text-gray-500">Không có.</div>;
+    return <div className="w-full bg-white rounded-2xl shadow-lg border border-gray-200 text-center text-gray-500 text-lg font-medium flex items-center justify-center gap-2 min-h-[370px]">🛎️ Hiện tại bạn chưa có dịch vụ chờ nào</div>;
   }
 
   const getServiceName = (id: string) => {

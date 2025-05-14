@@ -28,7 +28,7 @@ const RegisterForm: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null); // Lưu trữ file ảnh
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  // const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { login } = useAuth(); // Lấy hàm login từ context
   const navigation = useNavigate();
@@ -119,7 +119,7 @@ const RegisterForm: React.FC = () => {
   };
 
   // Thông báo điều kiện điền form
-  const validateName = (value) => {
+  const validateName = (value: string) => {
     const nameRegex = /^[A-Za-zÀ-ỹ\s]{2,50}$/;
     if (!value) {
       setErrors((prev) => ({ ...prev, name: "Họ và Tên không được để trống" }));
@@ -133,7 +133,7 @@ const RegisterForm: React.FC = () => {
     }
   };
 
-  const validateEmail = (value) => {
+  const validateEmail = (value: string) => {
     const emailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     if (!value) {
       setErrors((prev) => ({ ...prev, email: "Email không được để trống" }));
@@ -147,7 +147,7 @@ const RegisterForm: React.FC = () => {
     }
   };
 
-  const validatePassword = (value) => {
+  const validatePassword = (value: string) => {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*@)[A-Za-z\d@]{8,30}$/;
     if (!value) {
       setErrors((prev) => ({ ...prev, password: "Mật khẩu không được để trống" }));
@@ -177,7 +177,7 @@ const RegisterForm: React.FC = () => {
   //   }
   // };
 
-  const validatePhone = (value) => {
+  const validatePhone = (value: string) => {
     const phoneRegex = /^0\d{9}$/;
     if (!value) {
       setErrors((prev) => ({ ...prev, phone: "Vui lòng nhập số điện thoại" }));
@@ -286,6 +286,11 @@ const RegisterForm: React.FC = () => {
           "OTP đã được xác thực thành công. Bạn có thể hoàn tất đăng ký."
         );
         toast.success("OTP đã được xác thực thành công. Bạn có thể hoàn tất đăng ký.");
+
+        // Gọi hàm tự động đăng nhập sau khi xác thực OTP thành công, chờ 3 giây rồi chuyển qua trang chủchủ
+        setTimeout(async () => {
+          await handleRegisterSuccess();
+        }, 3000);
       } else {
         setMessage("OTP không hợp lệ hoặc đã hết hạn.");
         toast.error("OTP không hợp lệ hoặc đã hết hạn.");

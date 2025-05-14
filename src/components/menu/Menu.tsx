@@ -19,9 +19,21 @@ import Chatbot from "../google/Chatbot";
 
 import { getOrderUser } from "../../service/apiProduct"; // Lấy dữ liệu giỏ hàng từ API
 
-// import ProductAdd from "../../page/product-SanPham/ProductAdd";
+import { OrderItemResponse } from "../../interface/Order_interface";
+
+import ProductAdd from "../../page/product-SanPham/ProductAdd";
 // import OrderAdd from "../../page/order-DonHang/OrderAdd";
 // import OrderList from "../../page/order-DonHang/OrderList";
+import AddService from "../../page/service-DichVu/DichVuAdd";
+
+interface Order {
+    id: number;
+    status: string;
+}
+export interface LocalOrderItem extends OrderItemResponse {
+  userId: number;
+  addedDate: string;
+}
 
 const Menu: React.FC = () => {
     const location = useLocation(); // Lấy đường dẫn hiện tại
@@ -84,7 +96,8 @@ const Menu: React.FC = () => {
         { id: "about", label: "Giới thiệu", path: "/gioithieu" },
         { id: "services", label: "Dịch vụ", path: "/dichvu" },
         { id: "product", label: "Sản phẩm", path: "/sanpham" },
-        // { id: "productadd", label: "Sản phẩm add", path: "/sanphamadd" },
+        { id: "lichhenadd", label: "Dịch vụ add", path: "/lichhenadd" },
+        { id: "productadd", label: "Sản phẩm add", path: "/sanphamadd" },
         // { id: "orderadd", label: "add gh", path: "/addgh" },
         // { id: "orderlist", label: "list gh", path: "/listgh" },
 
@@ -171,6 +184,7 @@ const Menu: React.FC = () => {
             logoutContext();
             setIsMenuOpen(false);
             setCartOrderCount(0);
+            setCartItemCount(0);
         } catch (error: unknown) {
             if (error instanceof Error) {
                 console.log("Error:", error.message);
@@ -181,12 +195,59 @@ const Menu: React.FC = () => {
     };
 
     const [showShop, setShowShop] = useState(false);
-    interface Order {
-        id: number;
-        status: string;
-    }
+    const [showCart, setShowCart] = useState(false);
 
     const [cartOrderCount, setCartOrderCount] = useState(0); // Số lượng đơn hàng trong giỏ
+
+    const [cartItemCount, setCartItemCount] = useState(0);
+
+    // useEffect(() => {
+    //     const updateCartItemCount = () => {
+    //         const userStr = localStorage.getItem("user");
+    //         const cartStr = localStorage.getItem("orderItems");
+
+    //         if (userStr && cartStr) {
+    //             const user = JSON.parse(userStr);
+    //             const allItems = JSON.parse(cartStr) as LocalOrderItem[];
+    //             const userItems = allItems.filter(item => item.userId === user.id);
+
+    //             setCartItemCount(userItems.length); // đếm tổng số đơn
+    //         } else {
+    //             setCartItemCount(0);
+    //         }
+    //     };
+
+    //     updateCartItemCount();
+
+    //     window.addEventListener("storage", updateCartItemCount); // cập nhật khi localStorage thay đổi
+    //     return () => window.removeEventListener("storage", updateCartItemCount);
+    // }, []);
+
+    const updateCartItemCount = () => {
+        const userStr = localStorage.getItem("user");
+        const cartStr = localStorage.getItem("orderItems");
+
+        if (userStr && cartStr) {
+            const user = JSON.parse(userStr);
+            const allItems = JSON.parse(cartStr) as LocalOrderItem[];
+            const userItems = allItems.filter(item => item.userId === user.id);
+
+            setCartItemCount(userItems.length); // đếm tổng số đơn
+        } else {
+            setCartItemCount(0);
+        }
+    };
+
+    useEffect(() => {
+        if (user?.id) {
+            updateCartItemCount(); // Khi user đã có -> cập nhật lại
+        } else {
+            setCartItemCount(0); // Khi không có user -> reset
+        }
+
+        window.addEventListener("storage", updateCartItemCount); // cập nhật khi localStorage thay đổi
+        return () => window.removeEventListener("storage", updateCartItemCount);
+    }, [user]);
 
     // Cập nhật số lượng giỏ hàng khi đăng nhập hoặc khi localStorage thay đổi
     useEffect(() => {
@@ -252,6 +313,9 @@ const Menu: React.FC = () => {
                 const ordersData = await getOrderUser(userId); // Lấy dữ liệu đơn hàng từ API
                 const orderCount = ordersData.filter((order: Order) => order.status !== "Đã giao").length;
                 setCartOrderCount(orderCount); // Cập nhật số lượng đơn hàng chưa giao vào state
+
+                // Đếm đơn hàng local
+                updateCartItemCount();
             }
 
             // Reset form và trạng thái focus
@@ -273,19 +337,28 @@ const Menu: React.FC = () => {
         } finally {
             setIsLoading(false); // Tắt trạng thái đang tải
         }
-    };    
-
-    // Yêu cầu đăng nhập để được đặt lịch    
-    const handleCartClick = () => {
+    };  
+    
+    // Yêu cầu đăng nhập để xem giỏ hàng  
+    const handleViewCart = () => {
         const user = localStorage.getItem("user");
         if (!user) {
-            // alert("Vui lòng đăng nhập để xem giỏ hàng.");
-            // navigation("/login");
+            setIsLoginOpen(true); // Mở modal đăng nhập 
+            return;
+        }
+        navigation("/profile/orders"); // Nếu đã đăng nhập, chuyển đến trang giỏ hàng
+    };
+
+    // Yêu cầu đăng nhập để xem đơn hàng    
+    const handleViewOrders = () => {
+        const user = localStorage.getItem("user");
+        if (!user) {
             setIsLoginOpen(true); // Mở modal đăng nhập 
             return;
         }
         navigation("/profile/myorders"); // Nếu đã đăng nhập, chuyển đến trang đơn hàng
     };
+
     if (isLoading) return <p>Đang tải giỏ hàng...</p>;
 
     return (
@@ -465,40 +538,58 @@ const Menu: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* Giỏ hàng */}
-                        <div 
-                            className="relative p-2"
-                            onMouseEnter={() => setShowShop(true)}
-                            onMouseLeave={() => setShowShop(false)}
+                        <div className="flex items-center space-x-4">
+                            {/* Giỏ hàng */}
+                            <div 
+                                className="relative p-2"
+                                onMouseEnter={() => setShowCart(true)}
+                                onMouseLeave={() => setShowCart(false)}
                             >
-                            {/* Icon Giỏ hàng */}
-                            <ShoppingCart
-                                className="cursor-pointer hover:scale-110 transition-all duration-300"
-                                onClick={handleCartClick} // Khi click vào giỏ hàng, kiểm tra trạng thái đăng nhập
-                            />
+                                <ShoppingCart 
+                                    className="cursor-pointer hover:scale-110 transition-all duration-300"
+                                    onClick={handleViewCart}
+                                 />
+                                {cartItemCount > 0 && (
+                                    <div className="absolute top-0 right-0 bg-green-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                        {cartItemCount}
+                                    </div>
+                                )}
+                                {showCart && (
+                                    <div className="absolute top-10 left-0 bg-white p-3 rounded-md shadow-lg flex items-center space-x-2 transition-all duration-300 min-w-[200px] before:content-[''] before:absolute before:-top-2 before:right-6 before:border-8 before:border-transparent before:border-b-white">
+                                        {cartItemCount === 0 ? (
+                                            <span className="text-lg">Giỏ hàng trống</span>
+                                        ) : (
+                                            <span className="text-lg">Có {cartItemCount} sản phẩm</span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
 
-                            <LocalShipping
-                                className="cursor-pointer hover:scale-110 transition-all duration-300"
-                                onClick={handleCartClick} // Khi click vào giỏ hàng, kiểm tra trạng thái đăng nhập
-                            />
-
-                            {/* Hiển thị số lượng đơn hàng trong giỏ */}
-                            {cartOrderCount > 0 && (
-                                <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                                    {cartOrderCount}
-                                </div>
-                            )}
-
-                            {/* Khung giỏ hàng */}
-                            {showShop && (
-                                <div className="absolute top-10 left-0 bg-white p-3 rounded-md shadow-lg flex items-center space-x-2 transition-all duration-300 min-w-[250px] before:content-[''] before:absolute before:-top-2 before:right-6 before:border-8 before:border-transparent before:border-b-white">
-                                    {cartOrderCount === 0 ? (
-                                        <span className="text-lg">Chưa có đơn hàng trong giỏ hàng.</span>
-                                    ) : (
-                                        <span className="text-lg">Có {cartOrderCount} đơn hàng trong giỏ hàng.</span>
-                                    )}
-                                </div>
-                            )}
+                            {/* Đơn hàng */}
+                            <div 
+                                className="relative p-2"
+                                onMouseEnter={() => setShowShop(true)}
+                                onMouseLeave={() => setShowShop(false)}
+                            >
+                                <LocalShipping
+                                    className="cursor-pointer hover:scale-110 transition-all duration-300"
+                                    onClick={handleViewOrders}
+                                />
+                                {cartOrderCount > 0 && (
+                                    <div className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                                        {cartOrderCount}
+                                    </div>
+                                )}
+                                {showShop && (
+                                    <div className="absolute top-10 left-0 bg-white p-3 rounded-md shadow-lg flex items-center space-x-2 transition-all duration-300 min-w-[200px] before:content-[''] before:absolute before:-top-2 before:right-6 before:border-8 before:border-transparent before:border-b-white">
+                                        {cartOrderCount === 0 ? (
+                                            <span className="text-lg">Chưa có đơn hàng</span>
+                                        ) : (
+                                            <span className="text-lg">Có {cartOrderCount} đơn hàng</span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                     
@@ -681,7 +772,8 @@ const Menu: React.FC = () => {
                         {activePage === "about" && <GioiThieu />}
                         {activePage === "services" && <DichVu />}
                         {activePage === "product" && <SanPham />}
-                        {/* {activePage === "productadd" && <ProductAdd />} */}
+                        {activePage === "lichhenadd" && <AddService />}
+                        {activePage === "productadd" && <ProductAdd />}
                         {/* {activePage === "orderadd" && <OrderAdd />} */}
                         {/* {activePage === "orderlist" && <OrderList />} */}
                         {activePage === "news" && <TinTuc />}

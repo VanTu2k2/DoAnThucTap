@@ -477,7 +477,7 @@ const BookingPage = () => {
                             const slotTime = dayjs(`${appointmentDate} ${slot}`, "YYYY-MM-DD HH:mm");
 
                             const isPast = isToday && slotTime.isBefore(currentTime);
-                            const isTooSoon = isToday && slotTime.diff(currentTime, "minute") < 120;
+                            const isTooSoon = isToday && slotTime.diff(currentTime, "minute") < 60;
 
                             const isDisabled = !appointmentDate || isPast || isTooSoon;
 
@@ -494,10 +494,10 @@ const BookingPage = () => {
                                     {slot}
                                 </button>
 
-                                {/* Hiện nhắc nhở nếu bị disable vì còn dưới 2 tiếng */}
+                                {/* Hiện nhắc nhở nếu bị disable vì còn dưới 1 tiếng */}
                                 {isTooSoon && !isPast && (
                                     <p className="text-[10px] text-red-500 italic mt-1 text-center">
-                                    Đặt lịch trước 2 tiếng nhé!
+                                    Đặt lịch trước 1 tiếng nhé!
                                     </p>
                                 )}
                                 </div>

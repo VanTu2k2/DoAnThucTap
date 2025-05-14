@@ -8,13 +8,16 @@ import { toast, ToastContainer } from 'react-toastify';
 import { getCategories } from '../../service/apiService';
 import { Category } from '../../interface/ServiceSPA_interface';
 import axios from 'axios';
-import { Package, CircleDollarSign, X, ShoppingCart } from 'lucide-react';
+import { CircleDollarSign, X, ShoppingCart } from 'lucide-react';
 import CartProductModal from '../../components/products/CartProductModal';
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 
 // import { getProducts, createOrder } from "../../service/apiProduct";
 // import { ProductResponse, OrderRequest } from "../../interface/Product_interface";
+
+// import { useLoading } from "../../hook/AuthContext";
+import { useApiWithLoading } from '../../hook/useApiWithLoading';
 
 const pageSize = 8
 
@@ -26,33 +29,43 @@ const SanPham: React.FC = () => {
     const [isCartModalOpen, setIsCartModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const navigate = useNavigate();
 
     const [open, setOpen] = useState(false);
-    const [statusFilter, setStatusFilter] = useState("");
+    // const [statusFilter, setStatusFilter] = useState("");
+    const [statusFilter] = useState("");
     const [activeSort, setActiveSort] = useState('option:noibat');
-    // const navigate = useNavigate();
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
     const [, setQuantityToAdd] = useState(1);
 
-    // Fetch categories khi load trang
-    useEffect(() => {
-        axios.get("/api/categories")
-        .then(res => setCategories(res.data))
-        .catch(err => console.error("Lỗi khi load categories", err));
-    }, []);
+    // const { setLoadingPage } = useLoading();
+    const { callApi } = useApiWithLoading(); // khởi tạo
+    const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-    useEffect(() => {
-        if (selectedCategoryId !== null) {
-            axios.get("/api/products") // Gọi tất cả products
-            .then(res => {
-                const allProducts: ProductResponse[] = res.data;
-                const filtered = allProducts.filter(product => product.category.id === selectedCategoryId);
-                setProducts(filtered);
-            })
-            .catch(err => 
-            console.error("Lỗi khi load products", err));
-        }
-    }, [selectedCategoryId]);
+    // const productsToShow = filteredProducts.length === 0 ? paginatedProducts : filteredProducts;
+    // const top3Products = [...productsToShow]
+    //     .sort((a, b) => b.price - a.price)
+    //     .slice(0, 3);
+
+    // Fetch categories khi load trang
+    // useEffect(() => {
+    //     axios.get("/api/categories")
+    //     .then(res => setCategories(res.data))
+    //     .catch(err => console.error("Lỗi khi load categories", err));
+    // }, []);
+
+    // useEffect(() => {
+    //     if (selectedCategoryId !== null) {
+    //         axios.get("/api/products") // Gọi tất cả products
+    //         .then(res => {
+    //             const allProducts: ProductResponse[] = res.data;
+    //             const filtered = allProducts.filter(product => product.category.id === selectedCategoryId);
+    //             setProducts(filtered);
+    //         })
+    //         .catch(err => 
+    //         console.error("Lỗi khi load products", err));
+    //     }
+    // }, [selectedCategoryId]);
 
     // Cách 2
     // const handleCategory = (e: number) => {
@@ -110,20 +123,6 @@ const SanPham: React.FC = () => {
     
     }, [sortType, selectedCategoryId ]); 
 
-    // Yêu cầu đăng nhập để được đặt lịch    
-    // const handleBookingClick = (product: unknown) => {
-    //     const user = localStorage.getItem("user");
-    
-    //     if (!user) {
-    //         alert("Vui lòng đăng nhập để đặt lịch.");
-    //         navigate("/login");
-    //         return;
-    //     }
-    //     const selectedProduct = product;
-    
-    //     navigate("/booking", { state: { selectedProduct } });
-    // };
-
     const [allProducts, setAllProducts] = useState<ProductResponse[]>([]);
 
     // State để lưu khoảng giá
@@ -163,35 +162,84 @@ const SanPham: React.FC = () => {
         fetchCategory();
     }, []);
 
-    // Tải danh sách sản phẩm
-    const fetchProducts = async () => {
-        try {
-            const response = await getProducts(); // Thay bằng API thực tế
-            setProducts(response);         // Hiển thị ban đầu
-            setAllProducts(response);      // Ghi vào bộ lọc gốc
-            
-            // const now = new Date();
-            // const sortedProducts = response.sort((a: ProductResponse, b: ProductResponse) => {
-            //     const dateA = new Date(a.createdAt);
-            //     const dateB = new Date(b.createdAt);
-            //     return dateB.getTime() - dateA.getTime();
-            // })
-            // setProducts(sortedProducts.map((product: ProductResponse) => ({
-            //     ...product,
-            //     isNew: (now.getTime() - new Date(product.createdAt).getTime()) / 1000 < 60,
-            // })));
-        } catch (error: unknown) {
-            console.error('Lỗi tải danh sách sản phẩm:', error);
+    // Thời gian hiện modal Thêm vào giỏ hàng
+    useEffect(() => {
+        if (showConfirmDialog) {
+            const timer = setTimeout(() => setShowConfirmDialog(false), 3000);
+            return () => clearTimeout(timer);
         }
+    }, [showConfirmDialog]);
+
+    // Tải danh sách sản phẩm
+    // const fetchProducts = async () => {
+    //     try {
+    //         const response = await getProducts(); // Thay bằng API thực tế
+    //         setProducts(response);         // Hiển thị ban đầu
+    //         setAllProducts(response);      // Ghi vào bộ lọc gốc
+            
+    //         // const now = new Date();
+    //         // const sortedProducts = response.sort((a: ProductResponse, b: ProductResponse) => {
+    //         //     const dateA = new Date(a.createdAt);
+    //         //     const dateB = new Date(b.createdAt);
+    //         //     return dateB.getTime() - dateA.getTime();
+    //         // })
+    //         // setProducts(sortedProducts.map((product: ProductResponse) => ({
+    //         //     ...product,
+    //         //     isNew: (now.getTime() - new Date(product.createdAt).getTime()) / 1000 < 60,
+    //         // })));
+    //     } catch (error: unknown) {
+    //         console.error('Lỗi tải danh sách sản phẩm:', error);
+    //     }
+    // };
+
+    // const fetchProducts = async () => {
+    //     setLoadingPage(true); // Bắt đầu hiện loading
+    //     const start = Date.now();
+
+    //     try {
+    //         const response = await getProducts(); // Gọi API
+    //         setProducts(response);         // Hiển thị dữ liệu
+    //         setAllProducts(response);      // Ghi vào bộ lọc gốc
+    //     } catch (error: unknown) {
+    //         console.error('Lỗi tải danh sách sản phẩm:', error);
+    //     } finally {
+    //         // Đảm bảo loader hiển thị ít nhất 2000ms
+    //         const elapsed = Date.now() - start;
+    //         const delay = Math.max(0, 2000 - elapsed);
+    //         setTimeout(() => {
+    //             setLoadingPage(false);
+    //         }, delay);
+    //     }
+    // };
+
+    // const fetchCategory = async () => {
+    //     try {
+    //         const response = await getCategories();
+    //         setCategories(response);
+    //     } catch (error) {
+    //         console.error('Error fetching category:', error);
+    //     }
+    // };
+
+    const fetchProducts = async () => {
+        await callApi(
+            () => getProducts(),
+                (response) => {
+                    setProducts(response);
+                    setAllProducts(response);
+                },
+            (error) => {
+                console.error('Lỗi tải danh sách sản phẩm:', error);
+            }
+        );
     };
 
     const fetchCategory = async () => {
-        try {
-            const response = await getCategories();
-            setCategories(response);
-        } catch (error) {
-            console.error('Error fetching category:', error);
-        }
+        await callApi(
+            () => getCategories(),
+            setCategories,
+            (error) => console.error("Lỗi khi load categories", error)
+        );
     };
 
     const filteredPro = products.filter((pro) => {
@@ -281,49 +329,125 @@ const SanPham: React.FC = () => {
     };
 
 
+    // const handleDeleteProduct = async (productId: number) => {
+    //     if (!window.confirm("Bạn có chắc chắn muốn xóa sản phẩm không?")) return;
+
+    //     await callApi(
+    //         () => deleteProduct(productId),
+    //         () => {
+    //         setProducts(products.filter((product) => product.id !== productId));
+    //         toast.success("Xóa sản phẩm thành công!");
+    //         },
+    //         (error) => {
+    //         if (axios.isAxiosError(error) && error.response?.data?.code === 1006) {
+    //             toast.warn("Không thể xóa do sản phẩm này đã được bán!");
+    //         } else {
+    //             toast.error("Có lỗi xảy ra khi gửi yêu cầu.");
+    //         }
+    //         }
+    //     );
+    // };
+
+    // const handleUpdateProduct = async (productId: number, formData: FormData) => {
+    //     const productForm: ProductForm = {
+    //         nameProduct: formData.get('nameProduct') as string,
+    //         description: formData.get('description') as string,
+    //         price: Number(formData.get('price')),
+    //         categoryId: Number(formData.get('categoryId')),
+    //         quantity: Number(formData.get('quantity')),
+    //     };
+
+    //     await callApi(
+    //         () => updateProduct(productId, productForm),
+    //         (response) => {
+    //         setProducts(products.map(product =>
+    //             product.id === productId ? response : product
+    //         ));
+    //         toast.success('Cập nhật sản phẩm thành công!');
+    //         },
+    //         (error) => {
+    //         console.error('Lỗi khi cập nhật sản phẩm:', error);
+    //         toast.error('Cập nhật sản phẩm thất bại!');
+    //         }
+    //     );
+    // };
+
     return (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="p-6">
+        <motion.div 
+            initial={{ opacity: 0, y: -10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.3 }} 
+            className="p-6"
+            style={{
+                backgroundColor: "#F0F9F8", // nền dịu nhẹ cho cảm giác thư giãn
+                minHeight: "100vh",
+            }}
+        >
+
             <ToastContainer />
             <Container sx={{ mb: 3 }}>
                 <img
-                src="https://media.hcdn.vn/catalog/category/1320x250-1.jpg"
-                alt="Banner Hasaki"
-                style={{ width: "100%", borderRadius: 12, objectFit: "cover" }}
+                    src="https://media.hcdn.vn/catalog/category/1320x250-1.jpg"
+                    alt="Banner Hasaki"
+                    style={{ width: "100%", borderRadius: 12, objectFit: "cover" }}
                 />
+
+                {/* Thanh tìm kiếm & lọc */}
+                {/* <div className="flex flex-col items-center gap-4 mb-10">
+                    <div className="flex flex-wrap gap-4 justify-center max-w-xl w-full">
+                        <div className="flex items-center gap-2 border px-4 py-2 rounded-full min-w-[300px]">
+                            <span className="text-lg">🔍</span>
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm sản phẩm..."
+                                className="outline-none text-[16px] flex-1"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+
+                        <select
+                            className="border px-4 py-2 rounded-full min-w-[180px] text-[16px]"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}>
+                                
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="ACTIVATE">Hoạt động</option>
+                            <option value="DEACTIVATED">Không hoạt động</option>
+                        </select>
+                    </div>
+                </div> */}
+
+                {/* Tiêu đề canh giữa */}
+                <h2 className="text-2xl font-bold mt-2 mb-2 text-center text-gray-800">Sản phẩm Spa</h2>
+
+                {/* Thanh tìm kiếm & lọc */}
+                <div className="flex justify-center mb-4">
+                    <div className="w-full max-w-xl bg-white shadow-md rounded-2xl px-6 py-2 border border-gray-200">
+                        <div className="flex items-center gap-3">
+                            <span className="text-xl text-gray-500">🔍</span>
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm sản phẩm..."
+                                className="flex-1 text-base text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
             </Container>
 
-            {/* Tiêu đề canh giữa */}
-            <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Sản phẩm Spa</h2>
-
-            {/* Thanh tìm kiếm & lọc */}
-            <div className="flex flex-col items-center gap-4 mb-10">
-                <div className="flex flex-wrap gap-4 justify-center max-w-xl w-full">
-                    <div className="flex items-center gap-2 border px-4 py-2 rounded-full min-w-[300px]">
-                        <span className="text-lg">🔍</span>
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm sản phẩm..."
-                            className="outline-none text-[16px] flex-1"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-
-                    <select
-                        className="border px-4 py-2 rounded-full min-w-[180px] text-[16px]"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}>
-                            
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="ACTIVATE">Hoạt động</option>
-                        <option value="DEACTIVATED">Không hoạt động</option>
-                    </select>
-                </div>
-            </div>
-
-            <Container maxWidth={false} disableGutters sx={{ maxWidth: "1500px", mx: "auto", px: 2 }}>
+            <Container maxWidth={false} disableGutters sx={{ maxWidth: "1600px", mx: "auto", px: 2 }}>
                 <Box display="flex" flexDirection={{ xs: "column", md: "row" }} gap={3}>
-                    <Box width={{ md: "20%" }}>
+                    <Box width={{ md: "20%" }} 
+                        sx={{ 
+                            backgroundColor: "rgba(255,255,255,0.9)", 
+                            borderRadius: 4, 
+                            boxShadow: "0 6px 16px rgba(0,0,0,0.05)", 
+                            padding: 2 
+                        }}
+                        >
                         <Box sx={{ backgroundColor: "#fff", borderRadius: 2 }}>
                             <Typography
                                 fontSize={20}
@@ -361,36 +485,33 @@ const SanPham: React.FC = () => {
                             ))}
 
                             <Divider sx={{ my: 2 }} />
+                                {selectedCategoryId && (
+                                    <>
+                                        <Typography fontWeight={700} mb={1}>KHOẢNG GIÁ</Typography>
+                                        <Slider
+                                        value={priceRange}
+                                        onChange={(e, newValue) => setPriceRange(newValue as number[])}
+                                        valueLabelDisplay="auto"
+                                        min={50000}
+                                        max={1000000}
+                                        step={10000}
+                                        />
 
-                            {selectedCategoryId && (
-                                <>
-                                    <Typography fontWeight={700} mb={1}>KHOẢNG GIÁ</Typography>
-                                    <Slider
-                                    value={priceRange}
-                                    onChange={(e, newValue) => setPriceRange(newValue as number[])}
-                                    valueLabelDisplay="auto"
-                                    min={50000}
-                                    max={1000000}
-                                    step={10000}
-                                    />
+                                        <Typography variant="body2" mt={1}>
+                                        {priceRange[0].toLocaleString('vi-VN')} VND - {priceRange[1].toLocaleString('vi-VN')} VND
+                                        </Typography>
 
-                                    <Typography variant="body2" mt={1}>
-                                    {priceRange[0].toLocaleString('vi-VN')} VND - {priceRange[1].toLocaleString('vi-VN')} VND
-                                    </Typography>
-
-                                    <Button
-                                    variant="contained"
-                                    color="warning"
-                                    size="small"
-                                    fullWidth
-                                    sx={{ mt: 2 }}
-                                    onClick={handleApplyPrice}>
-                                    Áp dụng
-                                    </Button>
-                                </>
-                            )}
-
-
+                                        <Button
+                                        variant="contained"
+                                        color="warning"
+                                        size="small"
+                                        fullWidth
+                                        sx={{ mt: 2 }}
+                                        onClick={handleApplyPrice}>
+                                        Áp dụng
+                                        </Button>
+                                    </>
+                                )}
                             <Divider sx={{ my: 2 }} />
 
                             <Box mb={2}>
@@ -402,22 +523,39 @@ const SanPham: React.FC = () => {
                                 <Typography variant="body2" mt={1} color="text.secondary">
                                     Ưu đãi siêu hot tại Spa - Không thể bỏ lỡ!
                                 </Typography>
-                                </Box>
+                            </Box>
 
-                                <Box mb={2}>
+                            <Box mb={2}>
                                 <img
                                     src="anh-spa-6.jpg"
                                     alt="Quảng cáo 2"
                                     style={{ width: "100%", borderRadius: 8 }}
                                 />
                                 <Typography variant="body2" mt={1} color="text.secondary">
-                                    Trải nghiệm sản phẩm thư giãn đỉnh cao hôm nay.
+                                    Trải nghiệm sản phẩm thư giãn đỉnh cao.
+                                </Typography>
+                            </Box>
+
+                            <Box mb={2}>
+                                <img
+                                    src="anh-spa-8.jpg"
+                                    alt="Quảng cáo 3"
+                                    style={{ width: "100%", borderRadius: 8 }}
+                                />
+                                <Typography variant="body2" mt={1} color="text.secondary">
+                                    Ưu đãi siêu hot tại Spa - Không thể bỏ lỡ!
                                 </Typography>
                             </Box>
                         </Box>
                     </Box>
 
-                    <Box flex={1}>
+                    <Box flex={1} 
+                        sx={{
+                            backgroundColor: 'rgba(255,255,255,0.85)', 
+                            borderRadius: 4,
+                            padding: 3,
+                            boxShadow: '0 8px 20px rgba(0,0,0,0.05)'
+                        }}>
                         <Typography fontWeight={700} fontSize={20} display="flex" alignItems="center" gap={1}>
                             Sản phẩm Spa
                             <Typography component="span" fontWeight={400} color="gray">
@@ -533,26 +671,26 @@ const SanPham: React.FC = () => {
                                             />
                                                 
                                             {/* Giá + Số lượng*/}
-                                            <div className="p-4 flex flex-col gap-2">
+                                            {/* <div className="p-4 flex flex-col gap-2">
                                                 <div className="flex items-center gap-1 text-sm text-gray-700">
                                                     <CircleDollarSign className="w-4 h-4 text-gray-700" />
                                                     <span className="text-orange-500">{product.price.toLocaleString("vi-VN")} VND</span>
                                                 </div>
                                                 <div className="flex items-center gap-1 text-sm text-gray-700">
-                                                    <ShoppingCart className="w-4 h-4" />
-                                                    {product.quantity} cái
-                                                </div>
-                                            </div>
-                                            {/* <div className="p-4 flex items-center justify-between text-sm text-gray-700">
-                                                <div className="flex items-center gap-1">
-                                                    <CircleDollarSign className="w-4 h-4 text-gray-700" />
-                                                    <span className="text-orange-500">{product.price.toLocaleString("vi-VN")} VND</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
                                                     <ShoppingCart className="w-4 h-4" />
                                                     {product.quantity} cái
                                                 </div>
                                             </div> */}
+                                            <div className="p-4 flex items-center justify-between text-sm text-gray-700">
+                                                <div className="flex items-center gap-1">
+                                                    <CircleDollarSign className="w-4 h-4 text-gray-700" />
+                                                    <span className="text-orange-500">{product.price.toLocaleString("vi-VN")} VND</span>
+                                                </div>
+                                                <div className="flex items-center gap-1">
+                                                    <ShoppingCart className="w-4 h-4" />
+                                                    {product.quantity}
+                                                </div>
+                                            </div>
 
                                             {/* <Typography fontSize={14}>{product.category.id}</Typography> */}
 
@@ -576,7 +714,7 @@ const SanPham: React.FC = () => {
                                                 </span>
                                             </div>
 
-                                            <div className="py-2 border-t border-gray-200 flex justify-between items-center">
+                                            {/* <div className="py-2 border-t border-gray-200 flex justify-between items-center">
                                                 <button
                                                     onClick={() => handleViewCart(product)}
                                                     title="Thêm vào giỏ hàng"
@@ -587,22 +725,23 @@ const SanPham: React.FC = () => {
                                                 </button>
 
                                                 <button
-                                                    // onClick={() => handleBuyNow(product)}
+                                                    onClick={() => handleViewCart(product)}
+                                                    title="Mua ngay"
                                                     className="bg-orange-500 hover:bg-orange-600 text-white font-medium py-1.5 px-4 rounded-md text-sm transition-colors"
                                                 >
                                                     Mua ngay
                                                 </button>
-                                            </div>
-                                            
-                                            {/* <div className="mt-4 space-y-2">
+                                            </div> */}
+
+                                            <div className="py-2 border-t border-gray-200">
                                                 <button
-                                                    className="w-full bg-orange-400 text-white py-2 rounded-lg font-semibold"
-                                                    // onClick={() => navigate("/booking", { state: { selectedService: service } })}
-                                                    onClick={() => handleBookingClick(product)}
+                                                    onClick={() => handleViewCart(product)}
+                                                    title="Mua ngay"
+                                                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-1.5 px-4 rounded-md text-sm transition-colors"
                                                 >
                                                     Mua ngay
                                                 </button>
-                                            </div> */}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -670,12 +809,41 @@ const SanPham: React.FC = () => {
                 />
             )}
 
-            {isCartModalOpen && (
+            {/* {isCartModalOpen && (
                 <CartProductModal
                     product={selectedProduct}
                     onClose={handleCloseCartModal}
                 />
-            )}            
+            )}         */}
+
+            {isCartModalOpen && (
+                <CartProductModal
+                    product={selectedProduct}
+                    onClose={handleCloseCartModal}
+                    onSuccessAddToCart={() => setShowConfirmDialog(true)} // ✅ callback gọi setShowConfirmDialog
+                />
+            )}
+
+            {/* Giao diện dialog xác nhận */}
+            {showConfirmDialog && (
+                <div className="fixed bottom-24 right-10 bg-white border border-gray-300 shadow-xl rounded-lg px-4 py-3 w-64 z-50">
+                    <div className="flex items-center gap-2 mb-3">
+                        <div className="w-6 h-6 flex items-center justify-center bg-green-100 rounded-full">
+                            <span className="text-green-600 text-lg">✔</span>
+                        </div>
+                        <span className="text-sm text-gray-800">Đã thêm vào giỏ hàng</span>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setShowConfirmDialog(false);
+                            navigate("/profile/orders");
+                        }}
+                        className="w-full text-blue-600 bg-blue-100 hover:bg-blue-200 font-semibold text-sm py-2 rounded-md transition-colors"
+                    >
+                        Xem giỏ hàng
+                    </button>
+                </div>
+            )}    
         </motion.div>
     );
 };

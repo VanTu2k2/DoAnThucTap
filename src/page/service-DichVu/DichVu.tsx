@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
 import { Button, Dialog, DialogContent, DialogTitle, Pagination, Container, Box, Typography, Divider, IconButton, Slider  } from "@mui/material";
-import { getServiceSPA, deleteServiceSPA, activateServiceSPA, deactivateServiceSPA } from "../../service/apiService";
+import { getServiceSPA, getCategories } from "../../service/apiService";
 import 'react-toastify/dist/ReactToastify.css';
-import { toast, ToastContainer } from 'react-toastify';
-import { AlarmClock, Ban, ShieldCheck, Trash2, CircleDollarSign, X } from "lucide-react";
+import { ToastContainer } from 'react-toastify';
+import { AlarmClock, CircleDollarSign, X } from "lucide-react";
 import { motion } from 'framer-motion'
 import { ServiceFull, Category } from "../../interface/ServiceSPA_interface";
-import axios from "axios";
+// import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 // import { useInvoice } from "../../hook/invoice/InvoiceContext";
+import { useApiWithLoading } from '../../hook/useApiWithLoading';
 
 const pageSize = 8;
 
@@ -19,7 +20,8 @@ const DichVu: React.FC = () => {
     const [open, setOpen] = useState(false); // State để kiểm soát việc hiển thị Dialog
     const [selectedService, setSelectedService] = useState<ServiceFull | null>(null); // State để lưu thông tin dịch vụ được chọn
     const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState("");
+    // const [statusFilter, setStatusFilter] = useState("");
+    const [statusFilter] = useState("");
     const [activeSort, setActiveSort] = useState('option:noibat');
     const navigate = useNavigate();
     const [mainImage, setMainImage] = useState<string | null>(null);
@@ -28,27 +30,28 @@ const DichVu: React.FC = () => {
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
 
     // const { addServiceToInvoice } = useInvoice();
-
+    
+    const { callApi } = useApiWithLoading(); // khởi tạo
 
     // Fetch categories khi load trang
-    useEffect(() => {
-        axios.get("/api/categories")
-        .then(res => setCategories(res.data))
-        .catch(err => console.error("Lỗi khi load categories", err));
-    }, []);
+    // useEffect(() => {
+    //     axios.get("/api/categories")
+    //     .then(res => setCategories(res.data))
+    //     .catch(err => console.error("Lỗi khi load categories", err));
+    // }, []);
 
-    useEffect(() => {
-        if (selectedCategoryId !== null) {
-          axios.get("/api/service-spa") // Gọi tất cả services
-            .then(res => {
-              const allServices: ServiceFull[] = res.data;
-              const filtered = allServices.filter(service => service.categoryId === selectedCategoryId);
-              setServices(filtered);
-            })
-            .catch(err => 
-            console.error("Lỗi khi load services", err));
-        }
-    }, [selectedCategoryId]);
+    // useEffect(() => {
+    //     if (selectedCategoryId !== null) {
+    //       axios.get("/api/service-spa") // Gọi tất cả services
+    //         .then(res => {
+    //           const allServices: ServiceFull[] = res.data;
+    //           const filtered = allServices.filter(service => service.categoryId === selectedCategoryId);
+    //           setServices(filtered);
+    //         })
+    //         .catch(err => 
+    //         console.error("Lỗi khi load services", err));
+    //     }
+    // }, [selectedCategoryId]);
 
     const getServiceTypesByCategory = (categoryId: number): string[] => {
         const filteredServices = services.filter(s => s.categoryId === categoryId);
@@ -92,9 +95,6 @@ const DichVu: React.FC = () => {
                     case 'giacaodenthap':
                         return b.price - a.price;
                     case 'moinhat': {
-                        // const aCreated = (a as unknown as { createdAt: string }).createdAt;
-                        // const bCreated = (b as unknown as { createdAt: string }).createdAt;
-                        // return new Date(bCreated).getTime() - new Date(aCreated).getTime();
                         return b.id - a.id; // Sắp xếp id giảm dần
                     }
                     default:
@@ -123,17 +123,17 @@ const DichVu: React.FC = () => {
     };
 
     // Xem lịch đã đặt hẹn của người dùng
-    const handleViewBookingsClick = () => {
-        const user = localStorage.getItem("user");
+    // const handleViewBookingsClick = () => {
+    //     const user = localStorage.getItem("user");
 
-        if (!user) {
-            alert("Vui lòng đăng nhập để xem lịch hẹn.");
-            navigate("/login");
-            return;
-        }
+    //     if (!user) {
+    //         alert("Vui lòng đăng nhập để xem lịch hẹn.");
+    //         navigate("/login");
+    //         return;
+    //     }
 
-        navigate("/listbooking"); 
-    };
+    //     navigate("/listbooking"); 
+    // };
 
     const [allServices, setAllServices] = useState<ServiceFull[]>([]);
 
@@ -185,17 +185,39 @@ const DichVu: React.FC = () => {
     
     useEffect(() => {
         fetchServices();
+        fetchCategory();
     }, []);
 
     // Tải danh sách dịch vụ
+    // const fetchServices = async () => {
+    //     try {
+    //         const response = await getServiceSPA(); // Thay bằng API thực tế
+    //         setServices(response);         // Hiển thị ban đầu
+    //         setAllServices(response);      // Ghi vào bộ lọc gốc
+    //     } catch (error) {
+    //         console.error("Lỗi tải danh sách dịch vụ:", error);
+    //     }
+    // };
+
     const fetchServices = async () => {
-        try {
-            const response = await getServiceSPA(); // Thay bằng API thực tế
-            setServices(response);         // Hiển thị ban đầu
-            setAllServices(response);      // Ghi vào bộ lọc gốc
-        } catch (error) {
-            console.error("Lỗi tải danh sách dịch vụ:", error);
-        }
+        await callApi(
+            () => getServiceSPA(),
+                (response) => {
+                    setServices(response);
+                    setAllServices(response);
+                },
+            (error) => {
+                console.error('Lỗi tải danh sách dịch vụ:', error);
+            }
+        );
+    };
+
+    const fetchCategory = async () => {
+        await callApi(
+            () => getCategories(),
+            setCategories,
+            (error) => console.error("Lỗi khi load categories", error)
+        );
     };
 
     const filteredSer = services.filter((ser) => {
@@ -225,88 +247,55 @@ const DichVu: React.FC = () => {
         setSelectedService(null); // Reset thông tin dịch vụ
     };
 
-    //Delete service
-    const handleDeleteService = async (serviceId: number) => {
-        if (!window.confirm("Bạn có chắc chắn muốn xóa dịch vụ này không?")) return;
-        try {
-            await deleteServiceSPA(serviceId);
-            toast.success('Xóa dịch vụ thành công.')
-            fetchServices();
-        } catch (error) {
-            console.error("Lỗi xóa dịch vụ:", error);
-            toast.error("Xóa dịch vụ thất bại!");
-        }
-    };
-
-    // Activate service
-    const handleActivateService = async (serviceId: number, name: string) => {
-        if (!window.confirm("Bạn có chắc chắn muốn kích hoạt dịch vụ này không?")) return;
-        try {
-            await activateServiceSPA(serviceId);
-            toast.success(`Kích hoạt dịch vụ ${name} thành công.`)
-            fetchServices();
-        } catch (error) {
-            console.error(`Lỗi kích hoạt dịch vụ ${name}:`, error);
-            toast.error("Ngừng kích hoạt thất bại!");
-        }
-    };
-
-    // Deactivate service
-    const handleDeactivateService = async (serviceId: number, name: string) => {
-        if (!window.confirm("Bạn có chắc chắn muốn ngừng kích hoạt dịch vụ này không?")) return;
-        try {
-            await deactivateServiceSPA(serviceId);
-            toast.success(`Ngừng kích hoạt dịch vụ ${name} thành công.`)
-            fetchServices();
-        } catch (error) {
-            console.error(`Lỗi ngừng kích hoạt dịch vụ ${name}:`, error);
-            toast.error("Ngừng kích hoạt thất bại!");
-        }
-    };
-
     return (
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="p-6">
+        <motion.div 
+            initial={{ opacity: 0, y: -10 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.3 }} 
+            className="p-6"
+            style={{
+                backgroundColor: "#F0F9F8", // nền dịu nhẹ cho cảm giác thư giãn
+                minHeight: "100vh",
+            }}
+        >
             <ToastContainer />
             <Container sx={{ mb: 3 }}>
                 <img
-                src="https://media.hcdn.vn/catalog/category/1320x250-1.jpg"
-                alt="Banner Hasaki"
-                style={{ width: "100%", borderRadius: 12, objectFit: "cover" }}
+                    src="https://media.hcdn.vn/catalog/category/1320x250-1.jpg"
+                    alt="Banner Hasaki"
+                    style={{ width: "100%", borderRadius: 12, objectFit: "cover" }}
                 />
+
+                {/* Tiêu đề canh giữa */}
+                <h2 className="text-2xl font-bold mt-2 mb-2 text-center text-gray-800">Dịch vụ Spa</h2>
+
+                {/* Thanh tìm kiếm & lọc */}
+                <div className="flex justify-center mb-4">
+                    <div className="w-full max-w-xl bg-white shadow-md rounded-2xl px-6 py-2 border border-gray-200">
+                        <div className="flex items-center gap-3">
+                            <span className="text-xl text-gray-500">🔍</span>
+                            <input
+                                type="text"
+                                placeholder="Tìm kiếm dịch vụ..."
+                                className="flex-1 text-base text-gray-800 placeholder-gray-400 focus:outline-none bg-transparent"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
             </Container>
 
-            {/* Tiêu đề canh giữa */}
-            <h2 className="text-3xl font-bold mb-6 text-center text-gray-800">Dịch vụ Spa</h2>
-
-            {/* Thanh tìm kiếm & lọc */}
-            <div className="flex flex-col items-center gap-4 mb-10">
-                <div className="flex flex-wrap gap-4 justify-center max-w-xl w-full">
-                    <div className="flex items-center gap-2 border px-4 py-2 rounded-full min-w-[300px]">
-                        <span className="text-lg">🔍</span>
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm dịch vụ..."
-                            className="outline-none text-[16px] flex-1"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
-
-                    <select
-                        className="border px-4 py-2 rounded-full min-w-[180px] text-[16px]"
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}>
-                            
-                        <option value="">Tất cả trạng thái</option>
-                        <option value="ACTIVATE">Hoạt động</option>
-                        <option value="DEACTIVATED">Không hoạt động</option>
-                    </select>
-                </div>
-            </div>
-
-            <Container maxWidth={false} disableGutters sx={{ maxWidth: "1500px", mx: "auto", px: 2 }}>
+            <Container maxWidth={false} disableGutters sx={{ maxWidth: "1600px", mx: "auto", px: 2 }}>
                 <Box display="flex" flexDirection={{ xs: "column", md: "row" }} gap={3}>
-                    <Box width={{ md: "20%" }}>
+                    <Box width={{ md: "20%" }}
+                        sx={{ 
+                                backgroundColor: "rgba(255,255,255,0.9)", 
+                                borderRadius: 2, 
+                                boxShadow: "0 6px 16px rgba(0,0,0,0.05)", 
+                                padding: 2 
+                            }}
+                        >
                         <Box sx={{ backgroundColor: "#fff", borderRadius: 2 }}>
                             <Typography
                                 fontSize={20}
@@ -399,7 +388,13 @@ const DichVu: React.FC = () => {
                         </Box>
                     </Box>
 
-                    <Box flex={1}>
+                    <Box flex={1}
+                        sx={{
+                            backgroundColor: 'rgba(255,255,255,0.85)', 
+                            borderRadius: 4,
+                            padding: 3,
+                            boxShadow: '0 8px 20px rgba(0,0,0,0.05)'
+                        }}>
                         <Typography fontWeight={700} fontSize={20} display="flex" alignItems="center" gap={1}>
                             Dịch vụ Spa
                             <Typography component="span" fontWeight={400} color="gray">
@@ -581,22 +576,22 @@ const DichVu: React.FC = () => {
                                             />
                                                 
                                             {/* Giá + Thời gian */}
-                                            <div className="p-4 flex flex-col gap-2">
-                                                <div className="flex items-center gap-1 text-sm text-gray-700">
+                                            <div className="p-4 flex items-center justify-between text-sm text-gray-700">
+                                                <div className="flex items-center gap-1">
                                                     <CircleDollarSign className="w-4 h-4 text-gray-700" />
                                                     <span className="text-orange-500">{service.price.toLocaleString("vi-VN")} VND</span>
                                                 </div>
-                                                <div className="flex items-center gap-1 text-sm text-gray-700">
+                                                <div className="flex items-center gap-1">
                                                     <AlarmClock className="w-4 h-4" />
                                                     {service.duration} phút
                                                 </div>
                                             </div>
 
-                                            <Typography fontSize={14}>{service.categoryId}</Typography>
+                                            {/* <Typography fontSize={14}>{service.categoryId}</Typography> */}
 
-                                            <Typography fontSize={14}>{service.serviceType}</Typography>
+                                            {/* <Typography fontSize={14}>{service.serviceType}</Typography> */}
 
-                                            <Typography fontSize={14}>Xếp dv mới nhất: {service.id}</Typography>
+                                            {/* <Typography fontSize={14}>Xếp dv mới nhất: {service.id}</Typography> */}
                                         </motion.div>
 
                                         {/* Dấu gạch ngăn cách */}
@@ -604,73 +599,36 @@ const DichVu: React.FC = () => {
 
                                         <div className="px-4 pb-4 flex flex-col gap-2 flex-grow">
                                             {/* Mô tả */}
-                                            <p className="text-sm text-gray-600 line-clamp-3 h-[72px]">{service.description}
-                                                <span className="text-xs text-blue-500 hover:underline cursor-pointer ml-1"
+                                            <div className="relative h-[60px]">
+                                                <p className="text-sm text-gray-600 line-clamp-3 h-[72px]">
+                                                    {service.description}
+                                                </p>
+                                                <span
+                                                    className="absolute bottom-0 right-0 text-xs text-blue-500 hover:underline cursor-pointer bg-white pl-1"
                                                     onClick={() => handleOpenDialog(service)}>
                                                     xem thêm
                                                 </span>
-                                            </p>
-
-                                            {/* Trạng thái */}
-                                            <p className={`text-center rounded-full text-sm py-1 mt-1 font-medium ${
-                                                service.status === 'ACTIVATE'
-                                                    ? 'bg-green-100 text-green-600'
-                                                    : 'bg-orange-100 text-orange-600'
-                                                }`}>
-                                                <span className="inline-block w-2 h-2 rounded-full mr-2 animate-ping"
-                                                    style={{ backgroundColor: service.status === 'ACTIVATE' ? '#10B981' : '#EF4444',}}>
-                                                </span>
-                                                {service.status === 'ACTIVATE' ? 'Đã kích hoạt' : 'Ngừng kích hoạt'}
-                                            </p>
-
-                                            {/* Hành động */}
-                                            <div className="flex justify-center gap-4 mt-4">
-                                                <motion.button
-                                                    whileHover={{ scale: 1.1 }}
-                                                    title="Xóa dịch vụ"
-                                                    className="text-red-400 bg-red-100 w-10 h-10 rounded-full hover:bg-red-500 hover:text-white flex items-center justify-center"
-                                                    onClick={() => handleDeleteService(service.id)}>
-                                                    <Trash2 />
-                                                </motion.button>
-
-                                                {service.status === 'ACTIVATE' ? (
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.1 }}
-                                                        title="Ngừng kích hoạt dịch vụ"
-                                                        className="text-orange-500 bg-orange-100 w-10 h-10 rounded-full hover:bg-orange-500 hover:text-white flex items-center justify-center"
-                                                        onClick={() => handleDeactivateService(service.id, service.name)}>
-                                                        <Ban />
-                                                    </motion.button>
-                                                ) : (
-                                                    <motion.button
-                                                        whileHover={{ scale: 1.1 }}
-                                                        title="Kích hoạt dịch vụ"
-                                                        className="text-blue-600 bg-blue-100 w-10 h-10 rounded-full hover:bg-blue-600 hover:text-white flex items-center justify-center"
-                                                        onClick={() => handleActivateService(service.id, service.name)}>
-                                                        <ShieldCheck />
-                                                    </motion.button>
-                                                )}
                                             </div>
 
                                             {/* Đặt hẹn */}
-                                            <div className="mt-4 space-y-2">
+                                            <div className="py-2 border-t border-gray-200">
                                                 <button
-                                                    className="w-full bg-orange-400 text-white py-2 rounded-lg font-semibold"
-                                                    // onClick={() => navigate("/booking", { state: { selectedService: service } })}
                                                     onClick={() => handleBookingClick(service)}
+                                                    title="Đặt hẹn"
+                                                    className="w-full bg-orange-400 hover:bg-orange-600 text-white font-medium py-1.5 px-4 rounded-md text-sm transition-colors"
                                                 >
                                                     Đặt hẹn
                                                 </button>
                                             </div>
 
-                                            <div className="mt-4 space-y-2">
+                                            {/* <div className="mt-4 space-y-2">
                                                 <button className="w-full bg-red-400 text-white py-2 rounded-lg font-semibold"
                                                         // onClick={() => navigate("/listbooking")}
                                                         onClick={handleViewBookingsClick}
                                                         >
                                                     Xem lịch đã Đặt hẹn
                                                 </button>
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
                                 ))}

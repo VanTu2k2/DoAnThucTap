@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { ProductResponse } from '../../interface/Product_interface';
+import { useNavigate } from "react-router-dom";
 
 interface CartProductModalProps {
     product: ProductResponse | null;
     onClose: () => void;
+    onSuccessAddToCart: () => void; // ✅ thêm dòng này
 }
 
-const CartProductModal: React.FC<CartProductModalProps> = ({ product, onClose }) => {
+const CartProductModal: React.FC<CartProductModalProps> = ({ product, onClose, onSuccessAddToCart }) => {
     const [quantity, setQuantity] = useState(1);
+    const navigate = useNavigate();
 
     if (!product) {
         return null;
@@ -29,24 +32,11 @@ const CartProductModal: React.FC<CartProductModalProps> = ({ product, onClose })
             return;
         }
     
-        // const orderItem: OrderItem = {
-        //     ...product,
-        //     quantity,
-        //     userId: user.id,
-        //     userName: user.name,
-        // };
-    
         const existingOrders: OrderItem[] = JSON.parse(localStorage.getItem('orderItems') || '[]');
     
         const existingIndex = existingOrders.findIndex(
             (item) => item.id === product.id && item.userId === user.id
         );
-    
-        // if (existingIndex !== -1) {
-        //     existingOrders[existingIndex].quantity += quantity;
-        // } else {
-        //     existingOrders.push(orderItem);
-        // }
 
         if (existingIndex !== -1) {
             // Nếu sản phẩm đã có, tăng số lượng
@@ -64,37 +54,57 @@ const CartProductModal: React.FC<CartProductModalProps> = ({ product, onClose })
         }
 
         localStorage.setItem('orderItems', JSON.stringify(existingOrders));
+
+        // Tự kích hoạt sự kiện "storage" để cập nhật icon giỏ hàng
+        window.dispatchEvent(new Event("storage"));
+
+        onClose(); // đóng modal
+        onSuccessAddToCart(); // callback cho cha biết để hiện confirm
+    };
+
+    const handleBuynow = () => {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const userId = user?.id;
+
+        if (!userId) {
+            alert('Vui lòng đăng nhập để thêm vào giỏ hàng!');
+            return;
+        }
+
+        const existingOrders: OrderItem[] = JSON.parse(localStorage.getItem('orderItems') || '[]');
+
+        const existingIndex = existingOrders.findIndex(
+            (item) => item.id === product.id && item.userId === user.id
+        );
+
+        let addedDate = new Date().toISOString();
+
+        if (existingIndex !== -1) {
+            existingOrders[existingIndex].quantity += quantity;
+            addedDate = existingOrders[existingIndex].addedDate; // dùng ngày cũ nếu đã có
+        } else {
+            const orderItem: OrderItem = {
+                ...product,
+                quantity,
+                userId: user.id,
+                userName: user.name,
+                addedDate,
+            };
+            existingOrders.push(orderItem);
+        }
+
+        localStorage.setItem('orderItems', JSON.stringify(existingOrders));
+
+        // Ghi nhớ ngày cần chọn
+        localStorage.setItem("selectedOrderDate", new Date(addedDate).toLocaleDateString("vi-VN"));
+
         alert('Sản phẩm đã được thêm vào giỏ hàng!');
         onClose();
-    };
-    
-    
 
-    // const handleOrder = () => {
-    //     const orderItem = {
-    //         ...product, // Lưu toàn bộ thông tin sản phẩm
-    //         quantity,   // Thêm số lượng
-    //     };
-    
-    //     // Lấy danh sách orderItems từ localStorage
-    //     const existingOrders = JSON.parse(localStorage.getItem('orderItems') || '[]');
-    
-    //     // Kiểm tra xem sản phẩm đã tồn tại trong giỏ hàng chưa
-    //     const existingIndex: number = existingOrders.findIndex((item: ProductResponse & { quantity: number }) => item.id === product.id);
-    //     if (existingIndex !== -1) {
-    //         // Nếu sản phẩm đã tồn tại, cập nhật số lượng
-    //         existingOrders[existingIndex].quantity += quantity;
-    //     } else {
-    //         // Nếu sản phẩm chưa tồn tại, thêm sản phẩm mới
-    //         existingOrders.push(orderItem);
-    //     }
-    
-    //     // Lưu lại vào localStorage
-    //     localStorage.setItem('orderItems', JSON.stringify(existingOrders));
-    
-    //     alert('Sản phẩm đã được thêm vào giỏ hàng!');
-    //     onClose(); // Đóng modal
-    // };
+        // Chuyển trang
+        navigate("/profile/orders");
+    };
+
 
     const handleIncrease = () => {
         if (quantity < product.quantity) {
@@ -179,17 +189,17 @@ const CartProductModal: React.FC<CartProductModalProps> = ({ product, onClose })
                 <div className="flex justify-end gap-4">
                     <button
                         type="button"
-                        onClick={onClose}
-                        className="bg-gray-400 hover:bg-gray-500 text-white px-5 py-2 rounded-lg shadow-md transition duration-200"
-                    >
-                        Hủy
-                    </button>
-                    <button
-                        type="button"
                         onClick={handleOrder}
                         className="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg shadow-md transition duration-200"
                     >
                         Thêm vào giỏ hàng
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleBuynow}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg shadow-md transition duration-200"
+                    >
+                        Mua ngay
                     </button>
                 </div>
             </div>

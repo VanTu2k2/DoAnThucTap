@@ -115,66 +115,11 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
         setIsModalOpen(false); // Đóng modal
     };
 
-    // const handleSaveShippingPhone = async (orderId: number) => {
-    //     console.log("👉 Bắt đầu cập nhật shippingPhone cho orderId:", orderId);
-
-    //     const orderToUpdate = orders.find(order => order.id === orderId);
-    //     if (!orderToUpdate) {
-    //         console.warn("⚠️ Không tìm thấy đơn hàng với id:", orderId);
-    //         return;
-    //     }
-
-    //     console.log("✅ Đã tìm thấy order:", orderToUpdate);
-
-    //     const updatedData = {
-    //         userId: orderToUpdate.user?.id,
-    //         guestName: orderToUpdate.guestName || "",
-    //         shippingPhone: editShippingPhone,
-    //         shippingAddress: orderToUpdate.shippingAddress || "",
-    //         notes: orderToUpdate.notes || "",
-    //         orderDate: orderToUpdate.orderDate || new Date().toISOString(),
-    //         orderItems: orderToUpdate.orderItems.map(item => ({
-    //         productId: item.product.id,
-    //         quantity: item.quantity,
-    //         })),
-    //     };
-
-    //     console.log("📦 Dữ liệu chuẩn bị gửi đi:", updatedData);
-
-    //     try {
-    //         const res = await fetch(`/api/orders/${orderId}`, {
-    //         method: "PUT",
-    //         headers: {
-    //             "Content-Type": "application/json",
-    //         },
-    //         body: JSON.stringify(updatedData),
-    //         });
-
-    //         if (!res.ok) {
-    //             const errorData = await res.json();
-    //             console.error("❌ Lỗi từ server:", errorData);
-    //             throw new Error(errorData.message || "Không thể cập nhật đơn hàng");
-    //         }
-
-    //         const data = await res.json();
-    //         console.log("✅ Cập nhật thành công:", data);
-
-    //         await fetchOrders();
-    //         console.log("🔄 Làm mới danh sách đơn hàng xong.");
-    //     } catch (error: unknown) {
-    //         if (error instanceof Error) {
-    //         console.error("❌ Lỗi khi cập nhật số điện thoại:", error.message);
-    //         } else {
-    //         console.error("❌ Lỗi không xác định khi cập nhật số điện thoại:", error);
-    //         }
-    //     }
-    // };
-
     // Hàm cập nhật sdt
     const handleSaveShippingPhone = async (orderId: number) => {
         const order = orders.find(o => o.id === orderId);
         if (!order) {
-            console.warn("⚠️ Không tìm thấy đơn hàng với id:", orderId);
+            console.warn("Không tìm thấy đơn hàng với id:", orderId);
             return;
         }
 
@@ -213,10 +158,10 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
             }
 
             await fetchOrders();
-            console.log("✅ Cập nhật số điện thoại thành công cho orderId:", orderId);
+            console.log("Cập nhật số điện thoại thành công cho orderId:", orderId);
             return true;
         } catch (error) {
-            console.error("❌ Lỗi khi cập nhật số điện thoại:", error instanceof Error ? error.message : error);
+            console.error("Lỗi khi cập nhật số điện thoại:", error instanceof Error ? error.message : error);
         }
     };
 
@@ -224,7 +169,7 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
     const handleSaveShippingAddress = async (orderId: number) => {
         const order = orders.find(o => o.id === orderId);
         if (!order) {
-            console.warn("⚠️ Không tìm thấy đơn hàng với id:", orderId);
+            console.warn("Không tìm thấy đơn hàng với id:", orderId);
             return;
         }
 
@@ -254,9 +199,9 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
             }
 
             await fetchOrders();
-            console.log("✅ Cập nhật địa chỉ giao hàng thành công cho orderId:", orderId);
+            console.log("Cập nhật địa chỉ giao hàng thành công cho orderId:", orderId);
         } catch (error) {
-            console.error("❌ Lỗi khi cập nhật địa chỉ:", error instanceof Error ? error.message : error);
+            console.error("Lỗi khi cập nhật địa chỉ:", error instanceof Error ? error.message : error);
         }
     };
 
@@ -264,7 +209,7 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
     const handleSaveShippingNote = async (orderId: number) => {
         const order = orders.find(o => o.id === orderId);
         if (!order) {
-            console.warn("⚠️ Không tìm thấy đơn hàng với id:", orderId);
+            console.warn("Không tìm thấy đơn hàng với id:", orderId);
             return;
         }
 
@@ -294,9 +239,9 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
             }
 
             await fetchOrders();
-            console.log("✅ Cập nhật ghi chú thành công cho orderId:", orderId);
+            console.log("Cập nhật ghi chú thành công cho orderId:", orderId);
         } catch (error) {
-            console.error("❌ Lỗi khi cập nhật ghi chú:", error instanceof Error ? error.message : error);
+            console.error("Lỗi khi cập nhật ghi chú:", error instanceof Error ? error.message : error);
         }
     };
 
@@ -329,14 +274,23 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
                                                 {order.user ? order.user.name : order.guestName || "Ẩn danh"}
                                             </span>
                                         </p>
+                                        <p>
+                                            SĐT người dùng:{" "}
+                                            <span className="text-gray-700">
+                                            {order.user?.phone || "Chưa cập nhật"}
+                                            </span>
+                                        </p>
+                                        <p>
+                                            Địa chỉ:{" "}
+                                            <span className="text-gray-700">
+                                            {order.user?.address || "Chưa cập nhật"}
+                                            </span>
+                                        </p>
+                                        <p>
+                                            Ngày đặt: {dayjs(order.orderDate).format("dddd, DD/MM/YYYY [lúc] HH:mm").replace(/^\w/, c => c.toUpperCase())}
+                                        </p>
 
                                         <div className="space-y-1 text-sm">
-                                            <p>
-                                                SĐT người dùng:{" "}
-                                                <span className="text-gray-700">
-                                                {order.user?.phone || "Chưa cập nhật"}
-                                                </span>
-                                            </p>
                                             <p className="flex items-center justify-between">
                                                 <span>
                                                     SĐT giao hàng:{" "}
@@ -381,12 +335,6 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
                                         </div>
 
                                         <div className="space-y-1 text-sm mt-2">
-                                            <p>
-                                                Địa chỉ:{" "}
-                                                <span className="text-gray-700">
-                                                {order.user?.address || "Chưa cập nhật"}
-                                                </span>
-                                            </p>
                                             <p className="flex items-center justify-between">
                                                 <span>
                                                 Địa chỉ giao hàng:{" "}
@@ -426,11 +374,7 @@ const OrderList = ({ filterByStatus = [] }: OrderListProps) => {
                                                 )}
                                             </p>
                                         </div>
-                                        
-                                        <p>
-                                            Ngày đặt: {dayjs(order.orderDate).format("dddd, DD/MM/YYYY [lúc] HH:mm").replace(/^\w/, c => c.toUpperCase())}
-                                        </p>
-                                        
+                                                                            
                                         <p className="flex items-center justify-between">
                                             <span>
                                                 Ghi chú:{" "}
