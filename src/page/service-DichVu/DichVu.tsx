@@ -21,7 +21,7 @@ const DichVu: React.FC = () => {
     const [selectedService, setSelectedService] = useState<ServiceFull | null>(null); // State để lưu thông tin dịch vụ được chọn
     const [searchTerm, setSearchTerm] = useState("");
     // const [statusFilter, setStatusFilter] = useState("");
-    const [statusFilter] = useState("");
+    // const [statusFilter] = useState("");
     const [activeSort, setActiveSort] = useState('option:noibat');
     const navigate = useNavigate();
     const [mainImage, setMainImage] = useState<string | null>(null);
@@ -62,8 +62,8 @@ const DichVu: React.FC = () => {
     const sortOptions = [
         { value: 'noibat', label: 'Nổi bật' },
         { value: 'moinhat', label: 'Mới nhất' },
-        { value: 'banchay', label: 'Bán chạy' },
-        { value: 'giamgia', label: 'Giảm giá' },
+        // { value: 'banchay', label: 'Bán chạy' },
+        // { value: 'giamgia', label: 'Giảm giá' },
         { value: 'giathapdencao', label: 'Giá thấp đến cao' },
         { value: 'giacaodenthap', label: 'Giá cao đến thấp' },
     ];
@@ -220,17 +220,23 @@ const DichVu: React.FC = () => {
         );
     };
 
-    const filteredSer = services.filter((ser) => {
-        return ser.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-            (statusFilter === "" || ser.status === statusFilter);
-    })
+    // const filteredSer = services.filter((ser) => {
+    //     return ser.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    //         (statusFilter === "" || ser.status === statusFilter);
+    // })
 
     const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
         setCurrentPage(value);
     };
 
     // Render danh sách dịch vụ theo Page
-    const paginatedServices = filteredSer.slice(
+    // const paginatedServices = filteredSer.slice(
+    //     (currentPage - 1) * pageSize,
+    //     currentPage * pageSize
+    // );
+
+    const displayedServices = filteredServices.length === 0 ? services : filteredServices;
+    const paginatedServices = displayedServices.slice(
         (currentPage - 1) * pageSize,
         currentPage * pageSize
     );
@@ -267,7 +273,7 @@ const DichVu: React.FC = () => {
                 />
 
                 {/* Tiêu đề canh giữa */}
-                <h2 className="text-2xl font-bold mt-2 mb-2 text-center text-gray-800">Dịch vụ Spa</h2>
+                <h2 className="text-2xl font-bold mt-2 mb-2 text-center text-gray-800">Dịch vụ Massage</h2>
 
                 {/* Thanh tìm kiếm & lọc */}
                 <div className="flex justify-center mb-4">
@@ -311,11 +317,11 @@ const DichVu: React.FC = () => {
                                     fontWeight: selectedCategoryId === null ? 600 : 400,
                                     mb: 0.5,
                                 }}>
-                                Danh mục Spa
+                                Danh mục Massage
                             </Typography>
 
                             {/* Danh sách danh mục */}
-                            {categories.map((category) => (
+                            {/* {categories.map((category) => (
                                 <Typography
                                     key={category.categoryId}
                                     fontSize={18}
@@ -329,6 +335,24 @@ const DichVu: React.FC = () => {
                                 >
                                     {category.categoryName}
                                 </Typography>
+                            ))} */}
+
+                            {categories
+                                .filter((category) => category.categoryId >= 1 && category.categoryId <= 3)
+                                .map((category) => (
+                                    <Typography
+                                    key={category.categoryId}
+                                    fontSize={18}
+                                    onClick={() => setSelectedCategoryId(category.categoryId)}
+                                    sx={{
+                                        cursor: "pointer",
+                                        color: selectedCategoryId === category.categoryId ? "primary.main" : "text.primary",
+                                        fontWeight: selectedCategoryId === category.categoryId ? 600 : 400,
+                                        mb: 0.5,
+                                    }}
+                                    >
+                                    {category.categoryName}
+                                    </Typography>
                             ))}
 
                             <Divider sx={{ my: 2 }} />
@@ -396,7 +420,7 @@ const DichVu: React.FC = () => {
                             boxShadow: '0 8px 20px rgba(0,0,0,0.05)'
                         }}>
                         <Typography fontWeight={700} fontSize={20} display="flex" alignItems="center" gap={1}>
-                            Dịch vụ Spa
+                            Dịch vụ Massage
                             <Typography component="span" fontWeight={400} color="gray">
                                 ({services.length} dịch vụ)
                             </Typography>
@@ -523,9 +547,12 @@ const DichVu: React.FC = () => {
                             <Box flexGrow={1} />
                         </Box>
 
+                        
+
+
+
                         {/* 👉 Hiển thị danh sách dịch vụ hoặc thông báo khi không có */}
-                        {/* {paginatedServices.length === 0 ? ( */}
-                        {(filteredServices.length === 0 ? paginatedServices : filteredServices).length === 0 ? (
+                        {paginatedServices.length === 0 ? (
                             <Box textAlign="center" mt={6}>
                                 <Typography fontSize={64}>🙁</Typography>
                                 <Typography mt={2} color="text.secondary" fontSize={14}>
@@ -550,32 +577,24 @@ const DichVu: React.FC = () => {
                             </Box>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-                                {/* {paginatedServices.map((service) => ( */}
-                                {(filteredServices.length === 0 ? paginatedServices : filteredServices).map((service) => (
+                                {paginatedServices.map((service) => (
                                     <div key={service.id} className="bg-white rounded-xl shadow-md overflow-hidden transition-shadow flex flex-col cursor-default">
                                         <motion.div
                                             whileHover={{ scale: 1.05 }}
                                             onClick={() => handleOpenDialog(service)}
-                                            className="group cursor-pointer hover:shadow-lg transition-shadow">
-
-                                            {/* Tên dịch vụ */}
-                                            {/* <h3 className="text-lg font-bold text-gray-900 p-4 group-hover:text-green-700 transition-colors duration-200">
-                                                {service.name}
-                                            </h3> */}
-                                            <h3 
+                                            className="group cursor-pointer hover:shadow-lg transition-shadow"
+                                        >
+                                            <h3
                                                 className="text-lg font-bold text-gray-900 p-4 group-hover:text-green-700 transition-colors duration-200 
-                                                            line-clamp-2 h-[4rem] leading-snug overflow-hidden">
+                                                        line-clamp-2 h-[4rem] leading-snug overflow-hidden"
+                                            >
                                                 {service.name}
                                             </h3>
-
-                                            {/* Hình ảnh */}
                                             <img
                                                 src={service.images[0] || "https://media.hcdn.vn/catalog/category/1320x250-1.jpg"}
                                                 alt={service.name}
                                                 className="w-full h-40 object-cover"
                                             />
-                                                
-                                            {/* Giá + Thời gian */}
                                             <div className="p-4 flex items-center justify-between text-sm text-gray-700">
                                                 <div className="flex items-center gap-1">
                                                     <CircleDollarSign className="w-4 h-4 text-gray-700" />
@@ -586,31 +605,22 @@ const DichVu: React.FC = () => {
                                                     {service.duration} phút
                                                 </div>
                                             </div>
-
-                                            {/* <Typography fontSize={14}>{service.categoryId}</Typography> */}
-
-                                            {/* <Typography fontSize={14}>{service.serviceType}</Typography> */}
-
-                                            {/* <Typography fontSize={14}>Xếp dv mới nhất: {service.id}</Typography> */}
                                         </motion.div>
 
-                                        {/* Dấu gạch ngăn cách */}
                                         <hr className="my-2 border-gray-200" />
 
                                         <div className="px-4 pb-4 flex flex-col gap-2 flex-grow">
-                                            {/* Mô tả */}
                                             <div className="relative h-[60px]">
-                                                <p className="text-sm text-gray-600 line-clamp-3 h-[72px]">
+                                                <p className="text-sm text-gray-600 line-clamp-3 pr-[45px]">
                                                     {service.description}
                                                 </p>
                                                 <span
                                                     className="absolute bottom-0 right-0 text-xs text-blue-500 hover:underline cursor-pointer bg-white pl-1"
-                                                    onClick={() => handleOpenDialog(service)}>
+                                                    onClick={() => handleOpenDialog(service)}
+                                                >
                                                     xem thêm
                                                 </span>
                                             </div>
-
-                                            {/* Đặt hẹn */}
                                             <div className="py-2 border-t border-gray-200">
                                                 <button
                                                     onClick={() => handleBookingClick(service)}
@@ -620,26 +630,23 @@ const DichVu: React.FC = () => {
                                                     Đặt hẹn
                                                 </button>
                                             </div>
-
-                                            {/* <div className="mt-4 space-y-2">
-                                                <button className="w-full bg-red-400 text-white py-2 rounded-lg font-semibold"
-                                                        // onClick={() => navigate("/listbooking")}
-                                                        onClick={handleViewBookingsClick}
-                                                        >
-                                                    Xem lịch đã Đặt hẹn
-                                                </button>
-                                            </div> */}
                                         </div>
                                     </div>
                                 ))}
                             </div>
-
                         )}
+
 
                         {/* Phân trang */}
                         <div className="flex justify-center mt-6">
-                            <Pagination
+                            {/* <Pagination
                                 count={Math.ceil(services.length / pageSize)}
+                                page={currentPage}
+                                onChange={handlePageChange}
+                                color="primary"
+                            /> */}
+                            <Pagination
+                                count={Math.ceil(displayedServices.length / pageSize)}
                                 page={currentPage}
                                 onChange={handlePageChange}
                                 color="primary"

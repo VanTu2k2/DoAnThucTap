@@ -21,10 +21,11 @@ import { getOrderUser } from "../../service/apiProduct"; // Lấy dữ liệu gi
 
 import { OrderItemResponse } from "../../interface/Order_interface";
 
-import ProductAdd from "../../page/product-SanPham/ProductAdd";
 // import OrderAdd from "../../page/order-DonHang/OrderAdd";
 // import OrderList from "../../page/order-DonHang/OrderList";
-import AddService from "../../page/service-DichVu/DichVuAdd";
+
+// import ProductAdd from "../../page/product-SanPham/ProductAdd";
+// import AddService from "../../page/service-DichVu/DichVuAdd";
 
 interface Order {
     id: number;
@@ -96,8 +97,8 @@ const Menu: React.FC = () => {
         { id: "about", label: "Giới thiệu", path: "/gioithieu" },
         { id: "services", label: "Dịch vụ", path: "/dichvu" },
         { id: "product", label: "Sản phẩm", path: "/sanpham" },
-        { id: "lichhenadd", label: "Dịch vụ add", path: "/lichhenadd" },
-        { id: "productadd", label: "Sản phẩm add", path: "/sanphamadd" },
+        // { id: "lichhenadd", label: "Dịch vụ add", path: "/dichvuadd" },
+        // { id: "productadd", label: "Sản phẩm add", path: "/sanphamadd" },
         // { id: "orderadd", label: "add gh", path: "/addgh" },
         // { id: "orderlist", label: "list gh", path: "/listgh" },
 
@@ -425,14 +426,19 @@ const Menu: React.FC = () => {
 
                 {/* Menu điều hướng */}
                 <div className="flex-grow flex flex-wrap justify-center space-x-12 items-center">
-                    <button onClick={() => navigation('/')} className="flex items-center space-x-4 hover:text-blue-500 uppercase">
+                    {/* <button onClick={() => navigation('/')} className="flex items-center space-x-4 hover:text-blue-500 uppercase">
                         <img 
-                            src="/credit-card.png"
+                            src="/anh_logo_massage.jpg"
                             alt="Logo"
-                            className="h-10 w-auto cursor-pointer mr-10"
+                            className="h-12 w-auto cursor-pointer mr-10"
                             onClick={() => navigation('/')}
                         />
-                    </button>
+                    </button> */}
+                    <img 
+                        src="/anh_logo_massage.jpg"
+                        alt="Logo"
+                        className="h-12 w-auto cursor-pointer mr-10"
+                    />
 
                     {menuItems.map(({ id, label, path, subItems }) => (
                         <div
@@ -772,8 +778,8 @@ const Menu: React.FC = () => {
                         {activePage === "about" && <GioiThieu />}
                         {activePage === "services" && <DichVu />}
                         {activePage === "product" && <SanPham />}
-                        {activePage === "lichhenadd" && <AddService />}
-                        {activePage === "productadd" && <ProductAdd />}
+                        {/* {activePage === "lichhenadd" && <AddService />} */}
+                        {/* {activePage === "productadd" && <ProductAdd />} */}
                         {/* {activePage === "orderadd" && <OrderAdd />} */}
                         {/* {activePage === "orderlist" && <OrderList />} */}
                         {activePage === "news" && <TinTuc />}

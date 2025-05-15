@@ -33,7 +33,7 @@ const SanPham: React.FC = () => {
 
     const [open, setOpen] = useState(false);
     // const [statusFilter, setStatusFilter] = useState("");
-    const [statusFilter] = useState("");
+    // const [statusFilter] = useState("");
     const [activeSort, setActiveSort] = useState('option:noibat');
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
     const [, setQuantityToAdd] = useState(1);
@@ -41,11 +41,6 @@ const SanPham: React.FC = () => {
     // const { setLoadingPage } = useLoading();
     const { callApi } = useApiWithLoading(); // khởi tạo
     const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-
-    // const productsToShow = filteredProducts.length === 0 ? paginatedProducts : filteredProducts;
-    // const top3Products = [...productsToShow]
-    //     .sort((a, b) => b.price - a.price)
-    //     .slice(0, 3);
 
     // Fetch categories khi load trang
     // useEffect(() => {
@@ -77,8 +72,8 @@ const SanPham: React.FC = () => {
     const sortOptions = [
         { value: 'noibat', label: 'Nổi bật' },
         { value: 'moinhat', label: 'Mới nhất' },
-        { value: 'banchay', label: 'Bán chạy' },
-        { value: 'giamgia', label: 'Giảm giá' },
+        // { value: 'banchay', label: 'Bán chạy' },
+        // { value: 'giamgia', label: 'Giảm giá' },
         { value: 'giathapdencao', label: 'Giá thấp đến cao' },
         { value: 'giacaodenthap', label: 'Giá cao đến thấp' },
     ];
@@ -126,7 +121,7 @@ const SanPham: React.FC = () => {
     const [allProducts, setAllProducts] = useState<ProductResponse[]>([]);
 
     // State để lưu khoảng giá
-    const DEFAULT_PRICE_RANGE = [50000, 1000000];
+    const DEFAULT_PRICE_RANGE = [50000, 30000000];
     const [priceRange, setPriceRange] = useState<number[]>(DEFAULT_PRICE_RANGE);
     useEffect(() => {
         setPriceRange(DEFAULT_PRICE_RANGE);
@@ -242,13 +237,20 @@ const SanPham: React.FC = () => {
         );
     };
 
-    const filteredPro = products.filter((pro) => {
-            return pro.nameProduct.toLowerCase().includes(searchTerm.toLowerCase()) &&
-                (statusFilter === "" || pro.productStatus === statusFilter);
-        });
+    // const filteredPro = products.filter((pro) => {
+    //         return pro.nameProduct.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    //             (statusFilter === "" || pro.productStatus === statusFilter);
+    //     });
     
-    // Render danh sách sản phẩm theo Page
-    const paginatedProducts = filteredPro.slice(
+    // // Render danh sách sản phẩm theo Page
+    // const paginatedProducts = filteredPro.slice(
+    //     (currentPage - 1) * pageSize,
+    //     currentPage * pageSize
+    // );
+
+    const displayedProducts = filteredProducts.length === 0 ? products : filteredProducts;
+
+    const paginatedProducts = displayedProducts.slice(
         (currentPage - 1) * pageSize,
         currentPage * pageSize
     );
@@ -328,50 +330,6 @@ const SanPham: React.FC = () => {
         }
     };
 
-
-    // const handleDeleteProduct = async (productId: number) => {
-    //     if (!window.confirm("Bạn có chắc chắn muốn xóa sản phẩm không?")) return;
-
-    //     await callApi(
-    //         () => deleteProduct(productId),
-    //         () => {
-    //         setProducts(products.filter((product) => product.id !== productId));
-    //         toast.success("Xóa sản phẩm thành công!");
-    //         },
-    //         (error) => {
-    //         if (axios.isAxiosError(error) && error.response?.data?.code === 1006) {
-    //             toast.warn("Không thể xóa do sản phẩm này đã được bán!");
-    //         } else {
-    //             toast.error("Có lỗi xảy ra khi gửi yêu cầu.");
-    //         }
-    //         }
-    //     );
-    // };
-
-    // const handleUpdateProduct = async (productId: number, formData: FormData) => {
-    //     const productForm: ProductForm = {
-    //         nameProduct: formData.get('nameProduct') as string,
-    //         description: formData.get('description') as string,
-    //         price: Number(formData.get('price')),
-    //         categoryId: Number(formData.get('categoryId')),
-    //         quantity: Number(formData.get('quantity')),
-    //     };
-
-    //     await callApi(
-    //         () => updateProduct(productId, productForm),
-    //         (response) => {
-    //         setProducts(products.map(product =>
-    //             product.id === productId ? response : product
-    //         ));
-    //         toast.success('Cập nhật sản phẩm thành công!');
-    //         },
-    //         (error) => {
-    //         console.error('Lỗi khi cập nhật sản phẩm:', error);
-    //         toast.error('Cập nhật sản phẩm thất bại!');
-    //         }
-    //     );
-    // };
-
     return (
         <motion.div 
             initial={{ opacity: 0, y: -10 }} 
@@ -392,36 +350,10 @@ const SanPham: React.FC = () => {
                     style={{ width: "100%", borderRadius: 12, objectFit: "cover" }}
                 />
 
-                {/* Thanh tìm kiếm & lọc */}
-                {/* <div className="flex flex-col items-center gap-4 mb-10">
-                    <div className="flex flex-wrap gap-4 justify-center max-w-xl w-full">
-                        <div className="flex items-center gap-2 border px-4 py-2 rounded-full min-w-[300px]">
-                            <span className="text-lg">🔍</span>
-                            <input
-                                type="text"
-                                placeholder="Tìm kiếm sản phẩm..."
-                                className="outline-none text-[16px] flex-1"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-
-                        <select
-                            className="border px-4 py-2 rounded-full min-w-[180px] text-[16px]"
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}>
-                                
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="ACTIVATE">Hoạt động</option>
-                            <option value="DEACTIVATED">Không hoạt động</option>
-                        </select>
-                    </div>
-                </div> */}
-
                 {/* Tiêu đề canh giữa */}
                 <h2 className="text-2xl font-bold mt-2 mb-2 text-center text-gray-800">Sản phẩm Spa</h2>
 
-                {/* Thanh tìm kiếm & lọc */}
+                {/* Thanh tìm kiếm */}
                 <div className="flex justify-center mb-4">
                     <div className="w-full max-w-xl bg-white shadow-md rounded-2xl px-6 py-2 border border-gray-200">
                         <div className="flex items-center gap-3">
@@ -467,7 +399,7 @@ const SanPham: React.FC = () => {
                             </Typography>
 
                             {/* Danh sách danh mục */}
-                            {categories.map((category) => (
+                            {/* {categories.map((category) => (
                                 <Typography
                                     key={category.categoryId}
                                     fontSize={18}
@@ -482,6 +414,25 @@ const SanPham: React.FC = () => {
                                 >
                                     {category.categoryName}
                                 </Typography>
+                            ))} */}
+
+                            {/* Danh sách danh mục (chỉ từ id 4 đến 7) */}
+                            {categories
+                            .filter((category) => category.categoryId >= 4 && category.categoryId <= 7)
+                            .map((category) => (
+                                <Typography
+                                key={category.categoryId}
+                                fontSize={18}
+                                onClick={() => setSelectedCategoryId(category.categoryId)}
+                                sx={{
+                                    cursor: "pointer",
+                                    color: selectedCategoryId === category.categoryId ? "primary.main" : "text.primary",
+                                    fontWeight: selectedCategoryId === category.categoryId ? 600 : 400,
+                                    mb: 0.5,
+                                }}
+                                >
+                                {category.categoryName}
+                                </Typography>
                             ))}
 
                             <Divider sx={{ my: 2 }} />
@@ -493,7 +444,7 @@ const SanPham: React.FC = () => {
                                         onChange={(e, newValue) => setPriceRange(newValue as number[])}
                                         valueLabelDisplay="auto"
                                         min={50000}
-                                        max={1000000}
+                                        max={30000000}
                                         step={10000}
                                         />
 
@@ -625,7 +576,8 @@ const SanPham: React.FC = () => {
                         </Box>
 
                         {/* 👉 Hiển thị danh sách sản phẩm hoặc thông báo khi không có */}
-                        {(filteredProducts.length === 0 ? paginatedProducts : filteredProducts).length === 0 ? (
+                        {displayedProducts.length === 0 ? (
+                        // {(filteredProducts.length === 0 ? paginatedProducts : filteredProducts).length === 0 ? (
                             <Box textAlign="center" mt={6}>
                                 <Typography fontSize={64}>🙁</Typography>
                                 <Typography mt={2} color="text.secondary" fontSize={14}>
@@ -650,7 +602,8 @@ const SanPham: React.FC = () => {
                             </Box>
                         ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-                                {(filteredProducts.length === 0 ? paginatedProducts : filteredProducts).map((product) => (
+                                {paginatedProducts.map((product) => (
+                                // {(filteredProducts.length === 0 ? paginatedProducts : filteredProducts).map((product) => (
                                     <div key={product.id} className="bg-white rounded-xl shadow-md overflow-hidden transition-shadow flex flex-col cursor-default">
                                         <motion.div
                                             whileHover={{ scale: 1.05 }}
@@ -667,7 +620,7 @@ const SanPham: React.FC = () => {
                                             <img
                                                 src={product.imageUrl || "https://media.hcdn.vn/catalog/category/1320x250-1.jpg"}
                                                 alt={product.nameProduct}
-                                                className="w-full h-40 object-cover"
+                                                className="w-full h-40 object-contain"
                                             />
                                                 
                                             {/* Giá + Số lượng*/}
@@ -714,25 +667,6 @@ const SanPham: React.FC = () => {
                                                 </span>
                                             </div>
 
-                                            {/* <div className="py-2 border-t border-gray-200 flex justify-between items-center">
-                                                <button
-                                                    onClick={() => handleViewCart(product)}
-                                                    title="Thêm vào giỏ hàng"
-                                                    className="flex items-center gap-1 bg-blue-100 hover:bg-blue-400 hover:text-white text-gray-700 font-medium py-1.5 px-4 rounded-md text-sm transition-colors"
-                                                >
-                                                    <Package className="w-4 h-4" />
-                                                    Thêm
-                                                </button>
-
-                                                <button
-                                                    onClick={() => handleViewCart(product)}
-                                                    title="Mua ngay"
-                                                    className="bg-orange-500 hover:bg-orange-600 text-white font-medium py-1.5 px-4 rounded-md text-sm transition-colors"
-                                                >
-                                                    Mua ngay
-                                                </button>
-                                            </div> */}
-
                                             <div className="py-2 border-t border-gray-200">
                                                 <button
                                                     onClick={() => handleViewCart(product)}
@@ -751,8 +685,14 @@ const SanPham: React.FC = () => {
 
                         {/* Phân trang */}
                         <div className="flex justify-center mt-6">
-                            <Pagination
+                            {/* <Pagination
                                 count={Math.ceil(products.length / pageSize)}
+                                page={currentPage}
+                                onChange={handlePageChange}
+                                color="primary"
+                            /> */}
+                            <Pagination
+                                count={Math.ceil(displayedProducts.length / pageSize)}
                                 page={currentPage}
                                 onChange={handlePageChange}
                                 color="primary"
@@ -808,13 +748,6 @@ const SanPham: React.FC = () => {
                     onUpdate={handleUpdateProduct}
                 />
             )}
-
-            {/* {isCartModalOpen && (
-                <CartProductModal
-                    product={selectedProduct}
-                    onClose={handleCloseCartModal}
-                />
-            )}         */}
 
             {isCartModalOpen && (
                 <CartProductModal
